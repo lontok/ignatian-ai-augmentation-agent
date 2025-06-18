@@ -435,37 +435,19 @@ LLM-driven personalization:
 
 ## Narrative
 
-Maya, a sophomore in LMU's College of Business Administration, is
-considering a summer internship for which she isn't sure she's
-qualified. She's new to the company and its sector, but wants to make
-her application stand out.
+Maya, a sophomore in LMU's College of Business Administration, is considering a summer internship for which she isn't sure she's qualified. She's new to the company and its sector, but wants to make her application stand out in a meaningful way that reflects her values and authentic self.
 
-Instead of going it alone, Maya signs in with her LMU Google account and
-uploads both her carefully researched job posting and her resume.
-Instantly, the app—powered by a cutting-edge LLM—brings together the
-real needs of this employer, deep background about the industry, and
-Maya's own journey at LMU. It asks Maya a bit more about her interests,
-recent projects, and what drew her to the opportunity.
+**Context Stage**: Maya signs in with her LMU Google account and uploads both her carefully researched job posting and her resume. The app's specialized LLM instantly analyzes both documents, extracting key responsibilities, skills, company mission, and industry context. Within minutes, she receives a comprehensive analysis showing how her background connects to the role, complete with insights about the company's values and the broader industry landscape.
 
-The LLM highlights alignments between the job's demands and Maya's
-achievements—then invites her to select, elaborate, or voice-narrate
-moments that mattered most. She picks her marketing internship and a
-finance competition, explaining what she learned and how she felt at
-each.
+**Experience Stage**: Next, Maya reviews the AI-identified connections between her background and the target role. The interface presents her skills, experiences, and achievements categorized by relevance, with clear visual indicators showing strength scores. She selects the experiences that resonate most with her—her marketing internship, a finance competition, and a volunteer project—and elaborates on why each was meaningful. "The marketing internship taught me how data can tell human stories," she writes, "and the finance competition showed me how numbers can serve social good."
 
-Now, the app offers a moment of sense-making: "Here are unique strengths
-and gaps we see—what surprises you? What feels most meaningful as you
-consider this role?" Maya draws connections she hadn't seen before.
+**Reflection Stage - Synthesis Phase**: The app then synthesizes Maya's selected experiences into a compelling narrative. The AI identifies three key connections: her ability to bridge technical and human elements, her consistent choice of collaborative over individual achievements, and her pattern of finding meaning through service to others. Maya reads her unique value proposition: "You bring analytical rigor combined with genuine care for human impact, consistently choosing collaborative approaches that bring out the best in others."
 
-Powerful, Ignatian-inspired prompts then drive her to examine her
-motivations and aspirations: "How does this role help you serve others?
-Where do your own goals and this company's mission align—or perhaps,
-create tension?" Maya responds in detail, speaking from the heart.
+**Reflection Stage - Ignatian Phase**: Moving seamlessly into deeper reflection, Maya encounters carefully crafted questions rooted in Ignatian spirituality. "What deeper values do you see reflected in the work that energizes you most?" prompts her to explore how her passion for data-driven storytelling serves something larger than herself. "How might this role allow you to be 'a person for others'?" leads her to articulate how business analysis can create more equitable outcomes. Through thoughtful written reflection, Maya discovers that her calling involves using analytical skills to amplify voices that often go unheard.
 
-Based on this, the LLM crafts a tailor-made project plan—a portfolio
-piece directly relevant to the job, but also rich with Maya's personal
-story. She exports her plan, practices interview responses the app
-generates, and heads into her interview brimming with confidence.
+**Action Stage**: Armed with both intellectual insights and heart-centered clarity, the LLM crafts a portfolio project that authentically integrates Maya's analytical capabilities with her service-oriented values. The project plan includes concrete steps for analyzing company diversity metrics and proposing improvements—work that demonstrates technical competence while advancing social justice. Each deliverable connects directly to both the job requirements and Maya's personal mission.
+
+**Evaluation Stage**: Finally, Maya practices with AI-generated interview questions that draw from her entire journey. "Tell me about a time when your analytical work served a larger purpose," mirrors exactly the kind of authentic, values-driven responses she's now prepared to give. She exports her comprehensive portfolio, practices her interview responses, and approaches her interview not just as a qualified candidate, but as someone who understands how this role fits into her larger calling to serve others through business.
 
 ------------------------------------------------------------------------
 
