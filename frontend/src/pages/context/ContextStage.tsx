@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import DocumentUpload from '../../components/documents/DocumentUpload';
 
@@ -26,6 +27,7 @@ interface AnalysisResult {
 
 const ContextStage: React.FC = () => {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -514,7 +516,10 @@ const ContextStage: React.FC = () => {
                   Your documents have been analyzed and we've identified key connections 
                   between your background and the target role. Let's move to the Experience stage!
                 </p>
-                <button className="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors">
+                <button 
+                  onClick={() => navigate('/experience')}
+                  className="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors"
+                >
                   Continue to Experience Stage
                 </button>
               </div>
