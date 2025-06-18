@@ -1,8 +1,10 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -25,7 +27,10 @@ const Dashboard: React.FC = () => {
           <p className="text-gray-600 text-sm mb-4">
             Upload your resume and target job description to establish the foundation.
           </p>
-          <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+          <button 
+            onClick={() => navigate('/context')}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+          >
             Start Context Stage
           </button>
         </div>

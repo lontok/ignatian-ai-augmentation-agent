@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 from datetime import datetime
@@ -21,6 +22,11 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     last_login = Column(DateTime(timezone=True))
+    
+    # Relationships
+    documents = relationship("Document", back_populates="user")
+    analyses = relationship("DocumentAnalysis", back_populates="user")
+    ipp_progress = relationship("IPPStageProgress", back_populates="user")
     
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"

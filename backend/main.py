@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from config.settings import settings
-from app.api import auth_router
+from app.api import auth_router, documents_router, analysis_router
 
 # Create FastAPI application
 app = FastAPI(
@@ -25,6 +25,8 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth_router, prefix="/api")
+app.include_router(documents_router, prefix="/api")
+app.include_router(analysis_router, prefix="/api")
 
 @app.get("/")
 async def root():

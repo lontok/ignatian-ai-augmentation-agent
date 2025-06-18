@@ -43,13 +43,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const login = async (googleCredential: string): Promise<void> => {
+    console.log('🔄 Starting login process...');
     setIsLoading(true);
     try {
+      console.log('📤 Sending credential to backend...');
       const response = await authService.loginWithGoogle(googleCredential);
+      console.log('📥 Backend response received:', response);
       setUser(response.user);
       setToken(response.access_token);
+      console.log('✅ User and token set in context');
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('❌ Login failed:', error);
       throw error;
     } finally {
       setIsLoading(false);

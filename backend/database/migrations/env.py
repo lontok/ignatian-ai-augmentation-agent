@@ -10,6 +10,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config.settings import settings
 from app.models import Base
+# Import all models to ensure they're registered with SQLAlchemy
+from app.models.user import User
+from app.models.document import Document
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

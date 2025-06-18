@@ -7,10 +7,10 @@ interface ProtectedRouteProps {
   fallback?: React.ReactNode;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+const ProtectedRoute = ({ 
   children, 
   fallback 
-}) => {
+}: ProtectedRouteProps): JSX.Element => {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
@@ -22,7 +22,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!isAuthenticated) {
-    return fallback || (
+    if (fallback) {
+      return <>{fallback}</>;
+    }
+    
+    return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="max-w-md w-full space-y-8 p-8">
           <div className="text-center">

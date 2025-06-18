@@ -4,6 +4,8 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/auth';
 import Header from './components/common/Header';
 import Dashboard from './pages/Dashboard';
+import SimpleLoggedIn from './pages/SimpleLoggedIn';
+import ContextStage from './pages/context/ContextStage';
 import './App.css';
 
 function App() {
@@ -18,7 +20,7 @@ function App() {
                 path="/" 
                 element={
                   <ProtectedRoute>
-                    <Dashboard />
+                    <SimpleLoggedIn />
                   </ProtectedRoute>
                 } 
               />
@@ -30,15 +32,12 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              {/* Future IPP stage routes will go here */}
+              {/* IPP stage routes */}
               <Route 
                 path="/context" 
                 element={
                   <ProtectedRoute>
-                    <div className="p-8 text-center">
-                      <h1 className="text-2xl font-bold">Context Stage</h1>
-                      <p className="text-gray-600 mt-2">Coming soon...</p>
-                    </div>
+                    <ContextStage />
                   </ProtectedRoute>
                 } 
               />

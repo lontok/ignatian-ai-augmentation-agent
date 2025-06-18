@@ -39,9 +39,12 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({ onError }) => {
 
     const handleCredentialResponse = async (response: any) => {
       try {
+        console.log('🔑 Google credential received:', response.credential?.substring(0, 50) + '...');
         await login(response.credential);
+        console.log('✅ Login successful!');
       } catch (error: any) {
-        console.error('Google Sign-In failed:', error);
+        console.error('❌ Google Sign-In failed:', error);
+        console.error('Error details:', error.response?.data);
         const errorMessage = error.response?.data?.detail || 'Authentication failed. Please try again.';
         if (onError) {
           onError(errorMessage);

@@ -33,7 +33,7 @@ async def login_with_google(
             access_token=access_token,
             token_type="bearer",
             expires_in=google_oauth_service.token_expire_minutes * 60,
-            user=UserProfile.from_orm(user)
+            user=UserProfile.model_validate(user)
         )
         
     except HTTPException:
@@ -60,7 +60,7 @@ async def get_current_user_profile(
     """
     Get current user profile
     """
-    return UserProfile.from_orm(current_user)
+    return UserProfile.model_validate(current_user)
 
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_token(
@@ -85,7 +85,7 @@ async def refresh_token(
             access_token=access_token,
             token_type="bearer",
             expires_in=google_oauth_service.token_expire_minutes * 60,
-            user=UserProfile.from_orm(current_user)
+            user=UserProfile.model_validate(current_user)
         )
         
     except Exception as e:
