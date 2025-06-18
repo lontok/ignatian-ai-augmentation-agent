@@ -2,11 +2,13 @@ from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 from datetime import datetime
+from config.settings import settings
 
 Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = {"schema": settings.db_schema}
     
     id = Column(Integer, primary_key=True, index=True)
     google_id = Column(String, unique=True, index=True, nullable=False)

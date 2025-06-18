@@ -1,10 +1,11 @@
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Union
 import os
 
 class Settings(BaseSettings):
     # Database
     database_url: str
+    db_schema: str = "dev"
     
     # Google OAuth2
     google_client_id: str
@@ -18,16 +19,17 @@ class Settings(BaseSettings):
     # Application
     environment: str = "development"
     debug: bool = True
-    allowed_origins: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    allowed_origins: Union[str, List[str]] = "http://localhost:3000,http://127.0.0.1:3000"
     
     class Config:
         env_file = ".env"
         case_sensitive = False
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # Convert comma-separated string to list for allowed_origins
+    @property
+    def allowed_origins_list(self) -> List[str]:
+        """Convert allowed_origins to list if it's a string"""
         if isinstance(self.allowed_origins, str):
-            self.allowed_origins = [origin.strip() for origin in self.allowed_origins.split(",")]
+            return [origin.strip() for origin in self.allowed_origins.split(",")]
+        return self.allowed_origins
 
 settings = Settings()
