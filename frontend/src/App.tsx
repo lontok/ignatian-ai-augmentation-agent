@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import SimpleLoggedIn from './pages/SimpleLoggedIn';
 import ContextStage from './pages/context/ContextStage';
 import ExperienceStage from './pages/experience/ExperienceStage';
+import ReflectionStage from './pages/reflection/ReflectionStage';
 import './App.css';
 
 function App() {
@@ -47,6 +48,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <ExperienceStage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/reflection" 
+                element={
+                  <ProtectedRoute>
+                    <ReflectionStage />
                   </ProtectedRoute>
                 } 
               />

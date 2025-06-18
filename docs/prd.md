@@ -7,13 +7,124 @@ that converts job listings and student resumes into tailored
 portfolio project plans. By embedding the Ignatian Pedagogical Paradigm
 (IPP) and its five elements—context, experience, reflection, action, and
 evaluation—the app helps students showcase skills, connect their values,
-and confidently prepare for job interviews. All core experiences are
-enriched by a Large Language Model (LLM) accessed via API, which
-dynamically researches job/industry/company info and generates deeply
-personalized reflective prompts and project plans. Authentication is
+and confidently prepare for job interviews. Each IPP stage is powered by
+specialized Large Language Models (LLMs) optimized for specific tasks,
+creating a more effective and cost-efficient user experience. Authentication is
 streamlined via Google sign-in (any Google email) for fast, secure onboarding. The outcome:
 increased student job readiness, stronger interview results, and deeper
 personal growth.
+
+------------------------------------------------------------------------
+
+## Multi-LLM Architecture
+
+### Overview
+
+The application employs a specialized multi-LLM approach where each stage of the IPP journey is powered by an LLM optimized for that specific task. This design provides:
+
+- **Specialized Performance**: Each LLM is configured with stage-specific system prompts and capabilities
+- **Cost Optimization**: Use of appropriate models for each task (cheaper models for simple parsing, premium models for complex reasoning)
+- **Quality Enhancement**: Stage-specific optimization improves accuracy and relevance
+- **Scalability**: Easy to swap or upgrade individual LLMs without affecting other stages
+
+### LLM Stage Specialization
+
+#### 1. **Context Stage - Document Analysis LLM**
+**Model Type**: GPT-4 with vision capabilities or Claude for document parsing
+**Primary Function**: Parse and extract structured data from resumes and job descriptions
+**System Prompt Focus**:
+- Document parsing and information extraction
+- Structured data output (skills, responsibilities, requirements)
+- Company/industry research synthesis
+**Key Capabilities**:
+- Extract technical skills, soft skills, and experience requirements
+- Analyze resume for transferable skills relevant to job title
+- Research company mission, values, and recent news
+- Identify industry trends and job market context
+
+#### 2. **Experience Stage - Pattern Recognition LLM**
+**Model Type**: Claude or GPT-4 with strong reasoning capabilities
+**Primary Function**: Identify connections and alignments between user background and job requirements
+**System Prompt Focus**:
+- Pattern matching and similarity analysis
+- Experience-to-requirement mapping
+- Highlighting relevant achievements
+**Key Capabilities**:
+- Identify which experiences best align with job requirements
+- Find gaps between user's background and job requirements
+- Suggest which experiences to emphasize for specific roles
+- Surface unexpected connections between background and requirements
+
+#### 3. **Reflection Stage - Enhanced Synthesis & Ignatian LLM**
+**Model Type**: Claude (preferred for ethical reasoning) or GPT-4 with creative capabilities
+**Primary Function**: Dual-purpose synthesis and values-based reflection generation
+**System Prompt Focus**:
+- **Synthesis Component**: Narrative construction, insight generation, connection discovery
+- **Reflection Component**: Ignatian pedagogical principles, values-based questioning, personal growth
+**Key Capabilities**:
+- **Sense-Making**: Create compelling narratives connecting background to role
+- **Pattern Recognition**: Identify surprising connections and unique value propositions
+- **Synthesis Generation**: Develop comprehensive insights about user's strengths and growth areas
+- **Ignatian Reflection**: Generate values-based prompts about alignment, service, and mission
+- **Integrated Experience**: Seamlessly bridge intellectual understanding with heart-centered meaning-making
+- **Contextual Adaptation**: Tailor reflection questions based on synthesis insights
+
+#### 4. **Action Stage - Project Generation LLM**
+**Model Type**: GPT-4 with strong planning capabilities
+**Primary Function**: Create actionable, portfolio-worthy project plans
+**System Prompt Focus**:
+- Project planning and design
+- Practical implementation
+- Portfolio artifact creation
+**Key Capabilities**:
+- Design portfolio projects demonstrating skills for specific roles
+- Create step-by-step project plans addressing skill gaps
+- Generate interview-ready talking points about projects
+- Develop practical, implementable project blueprints
+
+#### 5. **Evaluation Stage - Assessment LLM**
+**Model Type**: GPT-4 with analytical capabilities
+**Primary Function**: Generate interview questions and self-assessment tools
+**System Prompt Focus**:
+- Interview preparation
+- Self-assessment frameworks
+- Growth tracking
+**Key Capabilities**:
+- Generate mock interview questions specific to role and background
+- Create self-assessment rubrics for completed projects
+- Develop reflection prompts for post-interview learning
+- Provide structured feedback frameworks
+
+### Technical Implementation
+
+#### LLM Orchestration
+```python
+class IPPStageLLM:
+    def __init__(self, stage_name, model_config, system_prompt):
+        self.stage = stage_name
+        self.model = model_config
+        self.system_prompt = system_prompt
+    
+    def process(self, user_input, context):
+        # Stage-specific processing logic
+        pass
+
+# Stage-specific LLM instances
+context_llm = IPPStageLLM("context", gpt4_vision_config, context_system_prompt)
+reflection_llm = IPPStageLLM("reflection", claude_config, reflection_system_prompt)
+```
+
+#### Cost Management Strategy
+- **Tier 1 (Simple Tasks)**: Use cost-effective models for document parsing and basic analysis
+- **Tier 2 (Complex Reasoning)**: Use premium models for reflection, synthesis, and project generation
+- **Caching**: Implement intelligent caching for repeated queries and similar analyses
+- **Fallback Strategy**: Automatic fallback to alternative models if primary model fails
+
+#### Quality Assurance
+- **Confidence Thresholds**: Different confidence levels for each stage based on task complexity
+- **Human-in-the-Loop**: Optional human validation for critical outputs (reflection prompts, project plans)
+- **A/B Testing**: Compare performance of different models for each stage
+- **User Feedback Integration**: Continuous improvement based on user satisfaction scores
 
 ------------------------------------------------------------------------
 
@@ -26,7 +137,7 @@ personal growth.
 - Deepen student engagement with Ignatian values throughout the job
   preparation process.
 
-- Streamline students’ ability to create value-driven portfolio projects
+- Streamline students' ability to create value-driven portfolio projects
   aligned with employer needs.
 
 - Capture data for continuous program assessment and research.
@@ -82,12 +193,12 @@ personal growth.
   support their professional growth while tracking Ignatian integration.
 
 - As a mentor, I want to view aggregated outcomes to assess the
-  program’s impact.
+  program's impact.
 
 **Persona 3: Researcher**
 
 - As a researcher, I want access to anonymized student usage and outcome
-  data, so I can measure the app’s holistic impact.
+  data, so I can measure the app's holistic impact.
 
 ------------------------------------------------------------------------
 
@@ -97,7 +208,7 @@ personal growth.
 
 **IPP Framing and Flow (Critical Priority)**
 
-The app’s entire user journey mirrors the five-stage Ignatian
+The app's entire user journey mirrors the five-stage Ignatian
 Pedagogical Paradigm. Each stage is distinctive and powered by
 LLM-driven personalization:
 
@@ -109,20 +220,20 @@ LLM-driven personalization:
 
     - The LLM, via API, parses both documents, extracting key
       responsibilities, skills, company mission, industry, and aligning
-      these with student’s prior experience.
+      these with student's prior experience.
 
     - App supplements initial data with LLM-driven research to bring in
       company, industry, and job-specific trends and nuances—helping
-      students see not only what’s being asked, but why.
+      students see not only what's being asked, but why.
 
     - The app explicitly prompts users for additional backdrop: major,
       interests, recent experiences, and what motivates them at this
-      stage—ensuring that the user’s “world” is the foundation before
+      stage—ensuring that the user's "world" is the foundation before
       moving forward.
 
 2.  **Experience**
 
-    - App visually and interactively presents the “raw data” (job needs,
+    - App visually and interactively presents the "raw data" (job needs,
       resume strengths, LLM-researched context).
 
     - LLM surfaces points of resonance and relevance—highlighting which
@@ -138,51 +249,47 @@ LLM-driven personalization:
       highlighted requirements, guided by Ignatian-style prompts crafted
       by the LLM.
 
-3.  **Sense-Making (Bridge)**
+3.  **Reflection (Enhanced with Sense-Making)**
 
-    - After Experience, the app synthesizes what’s surfaced—summarizing
-      or visualizing the connections and gaps found.
+    - **Synthesis Phase**: After Experience, the app synthesizes selected 
+      experiences into meaningful narratives, identifying key connections, 
+      unique value propositions, and surprising insights through LLM analysis.
 
-    - The LLM offers interpretations, identifies intriguing linkages,
-      and invites users to reflect: “Here’s what’s resonating: these
-      skills, these experiences, these gaps.”
+    - **Pattern Recognition**: The LLM offers interpretations, identifies 
+      intriguing linkages, and presents a comprehensive synthesis showing 
+      "Here's what's resonating: your narrative, your connections, your 
+      unique strengths."
 
-    - Interactive follow-up: app asks “Which of these connections feels
-      most significant or surprising to you?” Students are prompted to
-      indicate, annotate, or voice-record their initial reactions.
+    - **Ignatian Reflection Phase**: The agent shifts into the heart of the 
+      Ignatian process, using LLM-powered questions to prompt students to 
+      grapple with meaning, purpose, and interpersonal connection.
 
-    - This concrete feedback sets the stage for deeper
-      meaning-making—moving from “what happened” to “why it matters.”
+    - **Values-Based Questioning**: Prompts probe four key areas:
+      * Values alignment: "What deeper values do you see reflected in work that energizes you?"
+      * Service to others: "How does this role allow you to be 'a person for others'?"
+      * Personal mission: "What unique contribution do you sense you're called to make?"
+      * Growth opportunities: "Where do tensions or challenges invite you to grow?"
 
-4.  **Reflection**
+    - **Integrated Experience**: The synthesis naturally flows into reflection, 
+      creating a seamless bridge from intellectual understanding to 
+      heart-centered meaning-making.
 
-    - The agent now shifts into the heart of the Ignatian process, using
-      LLM-powered questions to prompt the student to grapple with
-      meaning, purpose, and interpersonal connection.
+    - **Deep Engagement**: App encourages thoughtful written reflection with 
+      contextual guidance rooted in Ignatian pedagogical principles.
 
-    - Prompts probe: “How does this role align with your deeper values
-      or mission?” “How might this job let you serve others?” “What
-      tensions or opportunities does this raise?”
+4.  **Action**
 
-    - LLM adapts reflections based on user inputs from sense-making,
-      dynamically customizing follow-up for authenticity and depth.
+    - Armed with synthesis and reflection insights, the LLM crafts a tangible, 
+      hands-on portfolio project plan or artifact.
 
-    - App strongly encourages voice input for richer, more narrative
-      reflection.
-
-5.  **Action**
-
-    - Armed with all this, the LLM crafts a tangible, hands-on portfolio
-      project plan or artifact.
-
-    - Project is directly mapped to both employer’s actual needs and the
-      student’s personal/interpersonal narrative as established earlier,
-      making it an authentic extension of both.
+    - Project is directly mapped to both employer's actual needs and the
+      student's personal/interpersonal narrative as established through
+      the integrated reflection process, making it an authentic extension of both.
 
     - Clear, actionable steps are displayed for student follow-through
       and later interview discussion.
 
-6.  **Evaluation**
+5.  **Evaluation**
 
     - App (with optional faculty input) prompts students to review their
       completed project and reflect on learning, growth, and next steps.
@@ -217,7 +324,7 @@ LLM-driven personalization:
 
 - **Project Tracking Dashboard**
 
-  - Tracks user’s progress through IPP stages, project status, and
+  - Tracks user's progress through IPP stages, project status, and
     reflection history.
 
 - **Analytics and Feedback**
@@ -233,13 +340,13 @@ LLM-driven personalization:
 
 - Users land and authenticate quickly via Google sign-in.
 
-- Onboarding clearly presents the IPP: “five-stage cycle built for head,
-  heart, and hands,” and the role of the LLM in enriching every phase
+- Onboarding clearly presents the IPP: "five-stage cycle built for head,
+  heart, and hands," and the role of the LLM in enriching every phase
   with high-context adaptation.
 
 - Short explanation sets up why users provide both resume and job
-  description, and how stepwise engagement advances them from “just
-  another applicant” to reflective, confidence-filled candidate.
+  description, and how stepwise engagement advances them from "just
+  another applicant" to reflective, confidence-filled candidate.
 
 ### Core Journey through the IPP
 
@@ -255,47 +362,46 @@ LLM-driven personalization:
 
 2.  **Experience**
 
-    - UI visualizes overlaps and distinctive elements between student’s
+    - UI visualizes overlaps and distinctive elements between student's
       resume, background, and job/industry info.
 
     - Students review these, then engage in voice or text input to
       select, elaborate on, or narrate standout experiences.
 
-    - LLM-powered Ignatian-style prompts draw out not just what they’ve
+    - LLM-powered Ignatian-style prompts draw out not just what they've
       done, but what they remember or feel most strongly about these
       experiences.
 
-3.  **Sense-Making (Bridge)**
+3.  **Reflection (Enhanced with Sense-Making)**
 
-    - App recaps: “Here’s what we’re seeing—your strengths, your gaps,
-      your unique angles.”
+    - **Synthesis Display**: App presents comprehensive analysis: "Here's your 
+      narrative, your key connections, your unique value proposition."
 
-    - LLM proposes potential narratives, asks users to zone in on
-      connections that surprise or inspire them.
+    - **Interactive Synthesis Review**: LLM proposes potential narratives and 
+      insights, students review surprising connections and growth areas.
 
-    - Interactive elements: click, annotate, or voice-record what stands
-      out and why.
+    - **Seamless Transition**: From intellectual synthesis to heart-centered 
+      reflection within the same unified experience.
 
-4.  **Reflection**
+    - **Ignatian Reflection Interface**: Deep-dive prompts appear, tailored to 
+      user selections and the LLM's dynamic understanding of their experiences.
 
-    - Deep-dive prompts appear, tailored to user selections and the
-      LLM’s dynamic understanding of job/industry/company/candidate fit.
+    - **Values-Centered Questions**: Prompts focus on four key areas - values 
+      alignment, service to others, personal mission, and growth opportunities.
 
-    - Prompts focus on meaning, value alignment, vocational motivations,
-      and authentic “head-heart” resonance with the opportunity.
+    - **Authentic Engagement**: Students respond with thoughtful written reflection, 
+      driving at the "so what?" behind their experiences and the deeper meaning 
+      of their preparation.
 
-    - Students respond with speech or text, driving at the “so what?”
-      behind their preparation.
-
-5.  **Action**
+4.  **Action**
 
     - LLM synthesizes everything into a customized, values-driven
       portfolio project plan or artifact.
 
     - Projects are practical, prominent, and connect explicitly both to
-      employer needs and to the student’s lived narrative.
+      employer needs and to the student's lived narrative.
 
-6.  **Evaluation**
+5.  **Evaluation**
 
     - App (with option for faculty co-pilot) directs a structured
       review:
@@ -305,7 +411,7 @@ LLM-driven personalization:
       - What challenges remain?
 
       - LLM guides a mock interview that leverages both original job
-        description and student’s narrative history for high-fidelity
+        description and student's narrative history for high-fidelity
         practice.
 
     - Reflective records saved to dashboard for later review and future
@@ -314,13 +420,13 @@ LLM-driven personalization:
 ### Key UI Elements
 
 - IPP journey mapped visually at the top of every page: user always
-  knows which stage they’re in.
+  knows which stage they're in.
 
 - Voice-to-text always available for richer input.
 
 - LLM-generated summaries and insights displayed throughout.
 
-- Editable, transparent “LLM research notes” sidebar so students see
+- Editable, transparent "LLM research notes" sidebar so students see
   what external info is being considered.
 
 - Secure Google sign-in & quick-access dashboard.
@@ -329,35 +435,35 @@ LLM-driven personalization:
 
 ## Narrative
 
-Maya, a sophomore in LMU’s College of Business Administration, is
-considering a summer internship for which she isn’t sure she’s
-qualified. She’s new to the company and its sector, but wants to make
+Maya, a sophomore in LMU's College of Business Administration, is
+considering a summer internship for which she isn't sure she's
+qualified. She's new to the company and its sector, but wants to make
 her application stand out.
 
 Instead of going it alone, Maya signs in with her LMU Google account and
 uploads both her carefully researched job posting and her resume.
 Instantly, the app—powered by a cutting-edge LLM—brings together the
 real needs of this employer, deep background about the industry, and
-Maya’s own journey at LMU. It asks Maya a bit more about her interests,
+Maya's own journey at LMU. It asks Maya a bit more about her interests,
 recent projects, and what drew her to the opportunity.
 
-The LLM highlights alignments between the job’s demands and Maya’s
+The LLM highlights alignments between the job's demands and Maya's
 achievements—then invites her to select, elaborate, or voice-narrate
 moments that mattered most. She picks her marketing internship and a
 finance competition, explaining what she learned and how she felt at
 each.
 
-Now, the app offers a moment of sense-making: “Here are unique strengths
+Now, the app offers a moment of sense-making: "Here are unique strengths
 and gaps we see—what surprises you? What feels most meaningful as you
-consider this role?” Maya draws connections she hadn’t seen before.
+consider this role?" Maya draws connections she hadn't seen before.
 
 Powerful, Ignatian-inspired prompts then drive her to examine her
-motivations and aspirations: “How does this role help you serve others?
-Where do your own goals and this company’s mission align—or perhaps,
-create tension?” Maya responds in detail, speaking from the heart.
+motivations and aspirations: "How does this role help you serve others?
+Where do your own goals and this company's mission align—or perhaps,
+create tension?" Maya responds in detail, speaking from the heart.
 
 Based on this, the LLM crafts a tailor-made project plan—a portfolio
-piece directly relevant to the job, but also rich with Maya’s personal
+piece directly relevant to the job, but also rich with Maya's personal
 story. She exports her plan, practices interview responses the app
 generates, and heads into her interview brimming with confidence.
 
@@ -368,49 +474,51 @@ generates, and heads into her interview brimming with confidence.
 ### User-Centric Metrics
 
 - Number of unique student users completing at least one project plan.
-
 - Number of students reporting increased confidence in interviews.
-
 - Number of project artifacts mentioned in job applications or
   interviews (captured via student survey).
-
-- Change in students’ self-reported sense of wholeness/integration
+- Change in students' self-reported sense of wholeness/integration
   (pre/post-app surveys).
+- **Multi-LLM Specific**: Stage completion rates and user satisfaction scores per IPP stage
 
 ### Business Metrics
 
 - Career placement rates for app users versus LMU average.
-
 - Aggregate student engagement (sessions, repeat usage).
-
 - Faculty/researcher adoption for curricular support.
+- **Multi-LLM ROI**: Cost per successful project completion across different LLM combinations
 
 ### Technical Metrics
 
-- Percentage of successful LLM API calls.
-
+- **Multi-LLM Performance**:
+  - Success rates per LLM and stage combination
+  - Response times and reliability metrics per model
+  - Cost efficiency metrics (quality per dollar spent)
+  - Fallback strategy effectiveness
 - LLM-generated prompt relevance/engagement scores (via user feedback).
-
 - Monthly active users (MAU).
+- System uptime >99% during pilot.
 
-- System uptime \>99% during pilot.
+### Multi-LLM Tracking Plan
 
-### Tracking Plan
+- **Stage-Specific Analytics**:
+  - Context stage: Document parsing accuracy and user satisfaction
+  - Experience stage: Pattern recognition effectiveness and user engagement
+  - Sense-Making stage: Synthesis quality and insight generation
+  - Reflection stage: Ignatian prompt effectiveness and depth of reflection
+  - Action stage: Project plan quality and implementation success
+  - Evaluation stage: Assessment accuracy and interview preparation effectiveness
 
-- Google-authenticated logins/registrations.
-
-- Job listing/resume uploads and successful LLM analysis.
-
-- Number and quality of AI-generated project plans.
-
-- Reflection prompts completed.
-
-- Project artifacts exported.
-
-- User feedback on LLM-driven prompt value and perceived “real-world
-  fit.”
-
-- Student survey completions (confidence, wholeness, job outcome).
+- **LLM Performance Tracking**:
+  - Google-authenticated logins/registrations
+  - Job listing/resume uploads and successful multi-LLM analysis
+  - Number and quality of AI-generated project plans per stage
+  - Reflection prompts completed with satisfaction scores
+  - Project artifacts exported with user feedback
+  - User feedback on multi-LLM prompt value and perceived "real-world fit"
+  - Student survey completions (confidence, wholeness, job outcome)
+  - Cost per successful completion per LLM combination
+  - A/B testing results for different model configurations
 
 ------------------------------------------------------------------------
 
@@ -418,63 +526,78 @@ generates, and heads into her interview brimming with confidence.
 
 ### Technical Needs
 
-- Job and resume parsing using secure API calls to a leading LLM.
+- **Multi-LLM Integration**: Specialized LLM orchestration for each IPP stage
+  - Document parsing using GPT-4 with vision or Claude for Context stage
+  - Pattern recognition using Claude or GPT-4 for Experience stage
+  - Creative synthesis using Claude or GPT-4 for Sense-Making stage
+  - Ethical reasoning using Claude for Reflection stage
+  - Project planning using GPT-4 for Action stage
+  - Analytical assessment using GPT-4 for Evaluation stage
 
-- LLM-driven project plan and prompt generation via external API.
+- **LLM Orchestration System**: Backend service to manage multiple LLM instances
+  - Stage-specific model selection and configuration
+  - Cost optimization and caching strategies
+  - Fallback mechanisms for model failures
+  - Quality assurance and confidence scoring
 
-- Web UI/UX (likely React or similar; lightweight, rapid development).
+- **Web UI/UX**: React-based frontend with stage-specific interactions
+- **Backend**: Python API orchestration with multi-LLM management
+- **Database**: PostgreSQL for persistent user/project/reflection data
+- **Analytics**: Multi-LLM performance tracking and user feedback collection
+- **Authentication**: Google OAuth2 integration for secure onboarding
 
-- Backend in Python (API orchestration, security, logic).
+### Multi-LLM Integration Points
 
-- PostgreSQL for persistent user/project/reflection data.
-
-- Basic analytics setup.
-
-- Integration with Google sign-in (OAuth2) for streamlined, secure
-  onboarding.
-
-### Integration Points
-
-- Google sign-in (OAuth2) for account creation and session management.
-
-- LLM integration (via paid API and/or open source models as available).
-
-- Resume and job parsing leveraging LLM’s NLP strengths.
-
-- Export (PDF/Web) for project artifacts.
-
-- LMS integration considered post-MVP.
+- **Google OAuth2**: Account creation and session management
+- **Multiple LLM APIs**: 
+  - OpenAI GPT-4 API for document analysis, project generation, and assessment
+  - Anthropic Claude API for pattern recognition, synthesis, and reflection
+  - Fallback options for each stage using alternative models
+- **Document Processing**: Resume and job description parsing with vision capabilities
+- **Export System**: PDF/Web export for project artifacts and reflection records
+- **LMS Integration**: Considered post-MVP for broader educational deployment
 
 ### Data Storage & Privacy
 
-- Secure student data storage in AWS/hosted environment.
-
-- Compliance with LMU data/privacy policies and all regulations (FERPA).
-
-- No resume or job data leaves the secure backend except for LLM API
-  calls; all research anonymized as needed.
-
-- IRB approval pursued for any research publication using student data.
+- **Secure Data Handling**: All student data stored in AWS/hosted environment
+- **Compliance**: LMU data/privacy policies and FERPA regulations
+- **LLM Data Privacy**: 
+  - No resume or job data leaves secure backend except for LLM API calls
+  - All research anonymized as needed
+  - Stage-specific data retention policies
+  - User consent for multi-LLM processing
+- **Research Ethics**: IRB approval for research publication using student data
 
 ### Scalability & Performance
 
-- Designed for rapid onboarding and minimal delay due to Google
-  authentication and LLM API responsiveness.
+- **Multi-LLM Optimization**: 
+  - Intelligent model selection based on task complexity
+  - Caching strategies for repeated queries
+  - Rate limiting and cost management per LLM provider
+  - Parallel processing where possible
+- **User Experience**: 
+  - Seamless transitions between LLM-powered stages
+  - Real-time feedback on LLM processing status
+  - Graceful degradation if specific LLMs are unavailable
+- **System Architecture**: Built for pilot cohort with easy extensibility to additional LLMs
 
-- System built for pilot cohort with easy extensibility.
+### Multi-LLM Quality Assurance
 
-- Caching and rate-limiting on LLM queries to control costs and latency.
+- **Stage-Specific Validation**: Different quality thresholds for each IPP stage
+- **A/B Testing Framework**: Compare performance of different models for each stage
+- **User Feedback Integration**: Continuous improvement based on stage-specific satisfaction scores
+- **Human-in-the-Loop**: Optional validation for critical outputs (reflection prompts, project plans)
+- **Performance Monitoring**: Track success rates, response times, and user satisfaction per LLM
 
 ### Potential Challenges
 
-- Handling LLM errors, downtime, or API quota limits without degrading
-  user experience.
-
-- LLM accuracy and cultural fit for Ignatian prompts.
-
-- Ensuring Google sign-in is compatible across all LMU user types.
-
-- Building trust in AI-generated recommendations.
+- **Multi-LLM Complexity**: Managing multiple API integrations and fallback strategies
+- **Cost Management**: Balancing quality and cost across multiple LLM providers
+- **Consistency**: Ensuring coherent user experience across different LLM outputs
+- **Error Handling**: Graceful degradation when specific LLMs fail or are unavailable
+- **Cultural Fit**: Ensuring Ignatian prompts work well across different LLM providers
+- **Google Sign-in Compatibility**: Ensuring compatibility across all LMU user types
+- **Trust Building**: Building user confidence in multi-LLM recommendations
 
 ------------------------------------------------------------------------
 
@@ -487,37 +610,124 @@ generates, and heads into her interview brimming with confidence.
 ### Team Size & Composition
 
 - 1 Developer (full-stack; Python/NLP/backend & basic frontend)
-
 - 2 Researchers (user testing, outcome tracking, Ignatian content)
-
 - Product lead/mentor: ad hoc (project oversight, content input)
 
 ### Suggested Phases
 
 1.  **Requirements & Design (2–3 days)**
 
-    - Finalize Google sign-in and LLM integration spec.
+    - Finalize Google sign-in and multi-LLM integration specification
+    - Design LLM orchestration system architecture
+    - Create stage-specific system prompts for each LLM
+    - Wireframes (Dev/Researchers)
+    - Ignatian content reviewed for multi-LLM fit (Researchers)
 
-    - Wireframes (Dev/Researchers).
+2.  **Multi-LLM Core Build & Integration (8–9 days)**
 
-    - Ignatian content reviewed for AI fit (Researchers).
+    - **LLM Orchestration System**: Build backend service for managing multiple LLM instances
+    - **Stage-Specific LLM Integration**: Implement each of the six specialized LLM configurations
+    - **Cost Management**: Implement caching, rate limiting, and fallback strategies
+    - **Quality Assurance**: Build confidence scoring and validation systems
+    - **End-to-End MVP**: Secure authentication, full multi-LLM-driven workflow, dashboard, PDF export
 
-2.  **Core Build & Integration (8–9 days)**
+3.  **Multi-LLM User Testing & Data Capture (2 days)**
 
-    - End-to-end MVP: secure authentication, full LLM-driven workflow,
-      dashboard, PDF export.
+    - Real pilot flow with multi-LLM system
+    - Focus on stage-specific LLM effectiveness and user satisfaction
+    - A/B testing of different LLM combinations
+    - Performance monitoring and cost analysis
 
-3.  **User Testing & Data Capture (2 days)**
+4.  **Multi-LLM Analysis & Iteration (1–2 days)**
 
-    - Real pilot flow, focus on LLM prompt/test effectiveness.
-
-4.  **Analysis & Iteration (1–2 days)**
-
-    - Usage, outcome review; tune LLM prompt strategies, UI edits.
+    - Usage and outcome review across all LLM stages
+    - Tune LLM prompt strategies and model selection
+    - Optimize cost-performance ratios
+    - UI edits based on multi-LLM user experience
 
 5.  **Report & Next Steps (1 day)**
 
-    - Pilot summary/report; recommendations for scaling and expanded LLM
-      capabilities.
+    - Pilot summary/report with multi-LLM performance analysis
+    - Recommendations for scaling and expanded multi-LLM capabilities
+    - Cost-benefit analysis of multi-LLM approach
+
+### Multi-LLM Implementation Priorities
+
+1. **Phase 1 Priority**: Context and Experience stages (document parsing and pattern recognition) ✅ **COMPLETED**
+2. **Phase 2 Priority**: Reflection stage (synthesis and Ignatian reflection) ✅ **COMPLETED**
+3. **Phase 3 Priority**: Action and Evaluation stages (project generation and assessment)
+
+### Risk Mitigation
+
+- **LLM Provider Dependencies**: Implement fallback strategies for each stage
+- **Cost Overruns**: Monitor and optimize LLM usage in real-time
+- **Quality Consistency**: Establish stage-specific quality thresholds and validation
+- **User Experience**: Ensure seamless transitions between different LLM-powered stages
+
+------------------------------------------------------------------------
+
+## Current Development Status (December 2024)
+
+### ✅ **COMPLETED - IPP Stages 1-3 (60% Complete)**
+
+#### **Infrastructure & Foundation**
+- **Authentication System**: Complete Google OAuth2 integration with JWT tokens
+- **Database Architecture**: PostgreSQL with environment-specific schemas (dev/qa/prod)
+- **API Foundation**: FastAPI backend with comprehensive error handling and CORS
+- **File Management**: Secure document upload, validation, and text extraction
+
+#### **Stage 1: Context - COMPLETE**
+- **Document Upload**: Drag-and-drop interface for resume and job descriptions
+- **LLM Analysis**: OpenAI GPT-4o-mini integration for document parsing
+- **Real-time Processing**: Status polling and progress indicators
+- **Context Summary**: AI-generated analysis results display
+
+#### **Stage 2: Experience - COMPLETE**
+- **Analysis Review**: Interactive display of document connections and insights
+- **Experience Selection**: User-friendly checkbox interface for meaningful experiences
+- **Elaboration Capture**: Text areas for personal significance and meaning
+- **Pattern Recognition**: Visual categorization with relevance scoring
+
+#### **Stage 3: Reflection (Enhanced with Sense-Making) - COMPLETE**
+- **Synthesis Generation**: AI-powered narrative construction and connection analysis
+- **Unique Value Proposition**: Personalized brand statement generation
+- **Ignatian Reflection**: Authentic values-based questioning system
+- **Integrated Experience**: Seamless flow from synthesis to heart-centered reflection
+- **Progress Tracking**: Visual completion indicators and validation
+
+### 🔄 **IN PROGRESS - Next Priority**
+
+#### **Stage 4: Action (IPP Stage 4)**
+- Portfolio project plan generation based on synthesis and reflection insights
+- Step-by-step implementation blueprints
+- Interview talking points and artifact creation
+- PDF/Web export capabilities
+
+#### **Stage 5: Evaluation (IPP Stage 5)**
+- Mock interview question generation
+- Self-assessment framework
+- Growth reflection capture
+- Final portfolio compilation
+
+### 🎯 **Architecture Achievements**
+
+#### **Enhanced IPP Structure**
+- **Pedagogically Sound**: Merged Sense-Making into Reflection for better flow
+- **User Experience**: Seamless navigation between analysis and meaning-making
+- **Ignatian Integration**: Authentic values-based reflection prompts
+- **Technical Excellence**: Professional UI with real-time feedback and validation
+
+#### **LLM Integration**
+- **OpenAI GPT-4o-mini**: Document analysis and synthesis generation
+- **Context-Aware Processing**: Dynamic prompt generation based on user selections
+- **Error Handling**: Comprehensive fallback strategies and user feedback
+- **Performance Optimization**: Efficient API usage with status polling
+
+### 📊 **Development Progress: 60% Complete**
+
+**Completed**: Context → Experience → Reflection (Synthesis + Ignatian)
+**Remaining**: Action → Evaluation
+
+The foundation and core user journey are complete, providing users with a meaningful path from document upload through deep personal reflection. The remaining stages will build upon this solid foundation to complete the full IPP experience.
 
 ------------------------------------------------------------------------

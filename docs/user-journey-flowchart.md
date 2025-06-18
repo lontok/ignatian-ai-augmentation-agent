@@ -43,17 +43,12 @@ flowchart TD
     
     RecordExperience --> ExperienceComplete[Mark Experience Complete]
     TypeExperience --> ExperienceComplete
-    ExperienceComplete --> SenseMaking[Sense-Making Bridge]
+    ExperienceComplete --> Reflection[Reflection Stage with Sense-Making]
     
-    %% Sense-Making Stage (Stage 3)
-    SenseMaking --> ShowSynthesis[Show LLM Synthesis]
-    ShowSynthesis --> IdentifyConnections[Identify Key Connections]
-    IdentifyConnections --> UserFeedback[User Selects Meaningful Connections]
-    UserFeedback --> SenseMakingComplete[Mark Sense-Making Complete]
-    SenseMakingComplete --> Reflection[Reflection Stage]
-    
-    %% Reflection Stage (Stage 4)
-    Reflection --> IgnatianPrompts[Generate Ignatian Prompts]
+    %% Reflection Stage (Stage 3 - includes Sense-Making)
+    Reflection --> ShowSynthesis[Show LLM Synthesis & Connections]
+    ShowSynthesis --> IdentifyConnections[User Selects Meaningful Connections]
+    IdentifyConnections --> IgnatianPrompts[Generate Ignatian Prompts]
     IgnatianPrompts --> DeepReflection[Deep Values-Based Questions]
     DeepReflection --> ReflectionInput{Voice or Text Response}
     ReflectionInput -->|Voice| RecordReflection[Record Reflection]
@@ -63,7 +58,7 @@ flowchart TD
     TypeReflection --> ReflectionComplete
     ReflectionComplete --> Action[Action Stage]
     
-    %% Action Stage (Stage 5)
+    %% Action Stage (Stage 4)
     Action --> ProjectGeneration[Generate Portfolio Project Plan]
     ProjectGeneration --> ProjectPlan[Display Actionable Project Steps]
     ProjectPlan --> ReviewProject[User Reviews Project Plan]
@@ -71,7 +66,7 @@ flowchart TD
     ExportProject --> ActionComplete[Mark Action Complete]
     ActionComplete --> Evaluation[Evaluation Stage]
     
-    %% Evaluation Stage (Stage 6)
+    %% Evaluation Stage (Stage 5)
     Evaluation --> MockInterview[Generate Mock Interview Questions]
     MockInterview --> SelfAssessment[Self-Assessment Framework]
     SelfAssessment --> InterviewPractice[Practice Interview Responses]
@@ -107,8 +102,11 @@ flowchart TD
     %% Apply styles to completed features
     class Start,Landing,Auth,Dashboard,IPPStart,Context,UploadResume,ResumeCheck,UploadJob,JobCheck,StartAnalysis,AnalysisStatus,WaitAnalysis,PollStatus,AnalysisError,ShowResults,ContextComplete completed
     
+    %% Apply styles to completed Experience stage features
+    class Experience,ReviewConnections,SelectExperiences,VoiceInput,RecordExperience,TypeExperience,ExperienceComplete completed
+    
     %% Apply styles to not yet started features
-    class Experience,ReviewConnections,SelectExperiences,VoiceInput,RecordExperience,TypeExperience,ExperienceComplete,SenseMaking,ShowSynthesis,IdentifyConnections,UserFeedback,SenseMakingComplete,Reflection,IgnatianPrompts,DeepReflection,ReflectionInput,RecordReflection,TypeReflection,ReflectionComplete,Action,ProjectGeneration,ProjectPlan,ReviewProject,ExportProject,ActionComplete,Evaluation,MockInterview,SelfAssessment,InterviewPractice,FinalReflection,EvaluationComplete,JourneyEnd,FacultyView,FacultyDashboard,StudentProgress,AggregateAnalytics,PortfolioExport,PDFExport,WebExport,DataCollection,ResearchAnalytics,NewJourney notStarted
+    class Reflection,ShowSynthesis,IdentifyConnections,IgnatianPrompts,DeepReflection,ReflectionInput,RecordReflection,TypeReflection,ReflectionComplete,Action,ProjectGeneration,ProjectPlan,ReviewProject,ExportProject,ActionComplete,Evaluation,MockInterview,SelfAssessment,InterviewPractice,FinalReflection,EvaluationComplete,JourneyEnd,FacultyView,FacultyDashboard,StudentProgress,AggregateAnalytics,PortfolioExport,PDFExport,WebExport,DataCollection,ResearchAnalytics,NewJourney notStarted
 ```
 
 ## Development Status Legend
@@ -150,31 +148,21 @@ flowchart TD
 
 ### 🔴 NOT YET STARTED (Red)
 
-#### 1. Experience Stage (IPP Stage 2)
-- Review document connections and LLM analysis results
-- Interactive experience selection and elaboration
-- Voice-to-text input capabilities
-- Pattern recognition LLM integration
+#### 1. Reflection Stage (IPP Stage 3) - **Enhanced with Sense-Making**
+- **Sense-Making Component**: LLM synthesis of experiences and connections
+- **Interactive Connection Identification**: User feedback on meaningful insights  
+- **Narrative Construction**: Creating compelling stories from experiences
+- **Ignatian Reflection Integration**: Values-based reflection questions
+- **Deep Personal Reflection**: Voice/text capture of meaningful insights
+- **Pedagogical Integration**: Full Ignatian principles implementation
 
-#### 2. Sense-Making Stage (IPP Stage 3)
-- LLM synthesis of experiences and connections
-- Interactive connection identification
-- User feedback collection on meaningful insights
-- Narrative construction capabilities
-
-#### 3. Reflection Stage (IPP Stage 4)
-- Ignatian-style prompt generation
-- Values-based reflection questions
-- Deep personal reflection capture (voice/text)
-- Integration with Ignatian pedagogical principles
-
-#### 4. Action Stage (IPP Stage 5)
+#### 2. Action Stage (IPP Stage 4)
 - Portfolio project plan generation
 - Step-by-step project blueprints
 - Project export functionality (PDF/Web)
 - Interview talking points generation
 
-#### 5. Evaluation Stage (IPP Stage 6)
+#### 3. Evaluation Stage (IPP Stage 5)
 - Mock interview question generation
 - Self-assessment framework
 - Interview practice system

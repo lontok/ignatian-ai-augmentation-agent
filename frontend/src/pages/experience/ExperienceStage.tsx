@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface Document {
@@ -36,6 +37,7 @@ interface ExperienceItem {
 
 const ExperienceStage: React.FC = () => {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [experienceItems, setExperienceItems] = useState<ExperienceItem[]>([]);
@@ -410,11 +412,14 @@ const ExperienceStage: React.FC = () => {
                 </svg>
                 <h3 className="text-lg font-medium mb-2">Great Selection!</h3>
                 <p className="text-sm mb-4">
-                  You've selected {selectedItems.size} meaningful experiences. Let's move to the next stage 
-                  where we'll explore the deeper connections and insights.
+                  You've selected {selectedItems.size} meaningful experiences. Let's move to the Reflection stage 
+                  where we'll explore deeper connections and engage in Ignatian-style reflection.
                 </p>
-                <button className="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors">
-                  Continue to Sense-Making Stage
+                <button 
+                  onClick={() => navigate('/reflection')}
+                  className="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors"
+                >
+                  Continue to Reflection Stage
                 </button>
               </div>
             </div>
