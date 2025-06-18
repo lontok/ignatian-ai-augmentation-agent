@@ -13,6 +13,7 @@ from app.models import Base
 # Import all models to ensure they're registered with SQLAlchemy
 from app.models.user import User
 from app.models.document import Document
+from app.models.analysis import DocumentAnalysis, IPPStageProgress
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -12,16 +12,49 @@ interface Document {
   content_text?: string;
 }
 
+interface AnalysisResult {
+  id: number;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  resume_analysis?: any;
+  job_analysis?: any;
+  connections_analysis?: any;
+  context_summary?: string;
+  error_message?: string;
+  created_at: string;
+  completed_at?: string;
+}
+
 const ContextStage: React.FC = () => {
   const { token } = useAuth();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     loadDocuments();
+    checkLatestAnalysis();
   }, []);
+
+  useEffect(() => {
+    // Clear polling interval on component unmount
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [pollingInterval]);
+
+  useEffect(() => {
+    // Auto-trigger analysis when both documents are uploaded and no analysis exists
+    if (hasRequiredDocuments() && !analysis && !analysisLoading) {
+      handleStartAnalysis();
+    }
+  }, [documents, analysis]);
 
   const loadDocuments = async () => {
     if (!token) return;
@@ -41,6 +74,31 @@ const ContextStage: React.FC = () => {
       console.error('Failed to load documents:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkLatestAnalysis = async () => {
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000/api'}/analysis/latest/status`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const analysisData = await response.json();
+        setAnalysis(analysisData);
+        
+        // Start polling if analysis is in progress
+        if (analysisData.status === 'processing' || analysisData.status === 'pending') {
+          startPolling(analysisData.id);
+        }
+      }
+    } catch (error) {
+      // No analysis exists yet, which is fine
+      console.log('No existing analysis found');
     }
   };
 
@@ -66,8 +124,100 @@ const ContextStage: React.FC = () => {
     return getExistingDocument('resume') && getExistingDocument('job_description');
   };
 
+  const handleStartAnalysis = async () => {
+    const resumeDoc = getExistingDocument('resume');
+    const jobDoc = getExistingDocument('job_description');
+    
+    if (!resumeDoc || !jobDoc || !token) return;
+
+    setAnalysisLoading(true);
+    setAnalysisError(null);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000/api'}/analysis/start`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          resume_document_id: resumeDoc.id,
+          job_document_id: jobDoc.id,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAnalysis({
+          id: data.analysis_id,
+          status: data.status,
+          created_at: new Date().toISOString(),
+        });
+        
+        // Start polling for updates
+        startPolling(data.analysis_id);
+      } else {
+        const errorData = await response.json();
+        setAnalysisError(errorData.detail || 'Failed to start analysis');
+      }
+    } catch (error) {
+      setAnalysisError('Failed to start analysis. Please try again.');
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
+
+  const startPolling = (analysisId: number) => {
+    // Clear existing interval
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000/api'}/analysis/${analysisId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const analysisData = await response.json();
+          setAnalysis(analysisData);
+          
+          // Stop polling when analysis is complete or failed
+          if (analysisData.status === 'completed' || analysisData.status === 'failed') {
+            clearInterval(interval);
+            setPollingInterval(null);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to poll analysis status:', error);
+      }
+    }, 3000); // Poll every 3 seconds
+
+    setPollingInterval(interval);
+  };
+
   const canProceed = () => {
-    return hasRequiredDocuments();
+    return hasRequiredDocuments() && analysis?.status === 'completed';
+  };
+
+  const getAnalysisStatusText = () => {
+    if (!analysis) return null;
+    
+    switch (analysis.status) {
+      case 'pending':
+        return 'Analysis queued...';
+      case 'processing':
+        return 'Analyzing your documents...';
+      case 'completed':
+        return 'Analysis complete!';
+      case 'failed':
+        return 'Analysis failed. Please try again.';
+      default:
+        return 'Unknown status';
+    }
   };
 
   if (loading) {
@@ -281,6 +431,76 @@ const ContextStage: React.FC = () => {
           </div>
         </div>
 
+        {/* Analysis Status */}
+        {hasRequiredDocuments() && (
+          <div className="mb-8">
+            {analysisError && (
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
+                {analysisError}
+                <button 
+                  onClick={handleStartAnalysis}
+                  className="ml-4 underline hover:no-underline"
+                  disabled={analysisLoading}
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+            
+            {analysis && (
+              <div className={`border rounded-lg p-6 ${
+                analysis.status === 'completed' ? 'bg-green-50 border-green-200' :
+                analysis.status === 'failed' ? 'bg-red-50 border-red-200' :
+                'bg-blue-50 border-blue-200'
+              }`}>
+                <div className={`text-center ${
+                  analysis.status === 'completed' ? 'text-green-800' :
+                  analysis.status === 'failed' ? 'text-red-800' :
+                  'text-blue-800'
+                }`}>
+                  {(analysis.status === 'pending' || analysis.status === 'processing') && (
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  )}
+                  
+                  {analysis.status === 'completed' && (
+                    <svg className="w-8 h-8 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )}
+                  
+                  {analysis.status === 'failed' && (
+                    <svg className="w-8 h-8 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )}
+                  
+                  <h3 className="text-lg font-medium mb-2">{getAnalysisStatusText()}</h3>
+                  
+                  {analysis.status === 'processing' && (
+                    <p className="text-sm mb-4">
+                      Our AI is analyzing your resume and job description to identify 
+                      connections and opportunities. This typically takes 1-2 minutes.
+                    </p>
+                  )}
+                  
+                  {analysis.status === 'completed' && analysis.context_summary && (
+                    <div className="text-left bg-white rounded-md p-4 mb-4">
+                      <h4 className="font-medium mb-2">Context Analysis Summary:</h4>
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{analysis.context_summary}</p>
+                    </div>
+                  )}
+                  
+                  {analysis.error_message && (
+                    <p className="text-sm text-red-700 mb-4">
+                      {analysis.error_message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Next Steps */}
         <div className="text-center">
           {canProceed() ? (
@@ -291,12 +511,21 @@ const ContextStage: React.FC = () => {
                 </svg>
                 <h3 className="text-lg font-medium mb-2">Ready to Continue!</h3>
                 <p className="text-sm mb-4">
-                  You've uploaded both required documents. We'll now analyze them 
-                  and guide you through the next stage of the IPP process.
+                  Your documents have been analyzed and we've identified key connections 
+                  between your background and the target role. Let's move to the Experience stage!
                 </p>
                 <button className="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors">
                   Continue to Experience Stage
                 </button>
+              </div>
+            </div>
+          ) : hasRequiredDocuments() ? (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <div className="text-blue-800">
+                <h3 className="text-lg font-medium mb-2">Analysis in Progress</h3>
+                <p className="text-sm">
+                  Please wait while we analyze your documents to prepare for the next stage.
+                </p>
               </div>
             </div>
           ) : (

@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     
+    # OpenAI
+    openai_api_key: str
+    
     # Application
     environment: str = "development"
     debug: bool = True
