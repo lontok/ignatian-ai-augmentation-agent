@@ -40,20 +40,64 @@ The application follows the five-stage Ignatian Pedagogical Paradigm:
 
 ## Development Status
 
-**Current State**: Early planning phase with PRD documentation only. No implementation code exists yet.
+**Current State**: Google OAuth2 authentication system implemented and ready for testing.
 
-**Next Steps**: The project needs initial setup including technology stack selection, environment configuration, and core architecture implementation.
+**Completed Features**:
+- Google OAuth2 authentication (backend + frontend)
+- User management and JWT tokens
+- Protected routes and authentication context
+- Basic dashboard with IPP stage overview
+- Database models and migrations setup
+
+**Next Steps**: Document upload functionality and LLM integration for Context stage.
+
+## Commands
+
+### Backend Development
+```bash
+cd backend
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+python main.py  # Start FastAPI server on port 8000
+```
+
+### Frontend Development  
+```bash
+cd frontend
+npm install
+npm start  # Start React dev server on port 3000
+```
+
+### Database Management
+```bash
+cd backend
+alembic revision --autogenerate -m "Description"
+alembic upgrade head
+```
+
+## Authentication Setup
+
+The app uses Google OAuth2 for authentication. Required environment variables:
+
+**Backend (.env)**:
+- `GOOGLE_CLIENT_ID` - Google OAuth2 client ID
+- `GOOGLE_CLIENT_SECRET` - Google OAuth2 client secret
+- `SECRET_KEY` - JWT signing key
+- `DATABASE_URL` - PostgreSQL connection string
+
+**Frontend (.env)**:
+- `REACT_APP_GOOGLE_CLIENT_ID` - Same Google OAuth2 client ID
+- `REACT_APP_API_URL` - Backend API URL (default: http://localhost:8000/api)
 
 ## Data Privacy & Security
 
-- FERPA compliance required for student data
+- Google OAuth2 authentication (any Google email accepted)
+- JWT token-based session management
 - Secure backend with limited LLM API data sharing
-- Google OAuth2 for authentication
-- Anonymous research data handling
-- IRB approval needed for research publications
+- Anonymous research data handling where applicable
 
 ## Target Users
 
-- Primary: LMU business students preparing for job applications
+- Primary: Students preparing for job applications
 - Secondary: Faculty mentors and researchers
-- Institution: Loyola Marymount University College of Business Administration
+- Focus: Business and career development education

@@ -1,6 +1,6 @@
 # Ignatian AI Augmentation Agent
 
-A web application for LMU business students that converts job listings and student resumes into tailored portfolio project plans using the Ignatian Pedagogical Paradigm (IPP).
+A web application for students that converts job listings and student resumes into tailored portfolio project plans using the Ignatian Pedagogical Paradigm (IPP).
 
 ## Project Overview
 
@@ -95,7 +95,7 @@ This project follows a full-stack architecture with separate frontend and backen
 - **Ignatian Pedagogical Paradigm**: Five-stage guided process (Context, Experience, Reflection, Action, Evaluation)
 - **AI-Powered Analysis**: LLM-driven document parsing and contextual research
 - **Portfolio Generation**: Customized project plans aligned with job requirements and personal values
-- **Google Authentication**: Secure OAuth2 integration for LMU students
+- **Google Authentication**: Secure OAuth2 integration (any Google email)
 - **Voice Input**: Speech-to-text for richer reflection responses
 - **Export Capabilities**: PDF and web export of portfolio artifacts
 - **Progress Tracking**: Dashboard to monitor IPP stage completion
@@ -123,7 +123,7 @@ This project is in early development. The folder structure has been established 
 
 ## Contributing
 
-This project is designed for LMU's College of Business Administration. Contribution guidelines will be established as development progresses.
+This project is designed for educational use in business and career development. Contribution guidelines will be established as development progresses.
 
 ## License
 

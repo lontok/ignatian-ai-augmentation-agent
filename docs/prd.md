@@ -2,8 +2,8 @@
 
 ### TL;DR
 
-The Ignatian AI Augmentation Agent is a web app for LMU business
-students that converts job listings and student resumes into tailored
+The Ignatian AI Augmentation Agent is a web app for students
+that converts job listings and student resumes into tailored
 portfolio project plans. By embedding the Ignatian Pedagogical Paradigm
 (IPP) and its five elements—context, experience, reflection, action, and
 evaluation—the app helps students showcase skills, connect their values,
@@ -11,7 +11,7 @@ and confidently prepare for job interviews. All core experiences are
 enriched by a Large Language Model (LLM) accessed via API, which
 dynamically researches job/industry/company info and generates deeply
 personalized reflective prompts and project plans. Authentication is
-streamlined via Google sign-in for fast, secure onboarding. The outcome:
+streamlined via Google sign-in (any Google email) for fast, secure onboarding. The outcome:
 increased student job readiness, stronger interview results, and deeper
 personal growth.
 
@@ -21,7 +21,7 @@ personal growth.
 
 ### Business Goals
 
-- Increase career placement rates among LMU business students.
+- Increase career placement rates among students.
 
 - Deepen student engagement with Ignatian values throughout the job
   preparation process.
@@ -31,7 +31,7 @@ personal growth.
 
 - Capture data for continuous program assessment and research.
 
-- Establish a scalable foundation to expand into other colleges at LMU.
+- Establish a scalable foundation for broader educational use.
 
 ### User Goals
 
@@ -51,7 +51,7 @@ personal growth.
 
 ### Non-Goals
 
-- Does not initially support non-LMU students or external institutions.
+- Does not automatically match students with employers, beyond generating project artifacts.
 
 - Does not try to replace career counselors or professional coaching.
 
@@ -62,7 +62,7 @@ personal growth.
 
 ## User Stories
 
-**Persona 1: LMU Business Student (Career Seeker)**
+**Persona 1: Business Student (Career Seeker)**
 
 - As a business student, I want to upload a job listing and my resume so
   that the app can help me create a focused project plan that aligns
