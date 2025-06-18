@@ -75,15 +75,30 @@ alembic revision --autogenerate -m "Description"
 alembic upgrade head
 ```
 
+## Database Setup
+
+The app uses AWS RDS PostgreSQL with environment-specific schemas:
+
+**Database Structure**:
+- **Database**: `ignatian_ai` 
+- **Schemas**: `dev`, `qa`, `prod`
+- **Tables**: Created in environment-specific schema (e.g., `dev.users`)
+
+**Environment Configuration**:
+- Development: `DB_SCHEMA=dev`
+- QA: `DB_SCHEMA=qa` 
+- Production: `DB_SCHEMA=prod`
+
 ## Authentication Setup
 
 The app uses Google OAuth2 for authentication. Required environment variables:
 
 **Backend (.env)**:
+- `DATABASE_URL` - AWS RDS PostgreSQL connection string
+- `DB_SCHEMA` - Database schema (dev/qa/prod)
 - `GOOGLE_CLIENT_ID` - Google OAuth2 client ID
 - `GOOGLE_CLIENT_SECRET` - Google OAuth2 client secret
 - `SECRET_KEY` - JWT signing key
-- `DATABASE_URL` - PostgreSQL connection string
 
 **Frontend (.env)**:
 - `REACT_APP_GOOGLE_CLIENT_ID` - Same Google OAuth2 client ID
