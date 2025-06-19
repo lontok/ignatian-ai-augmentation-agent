@@ -13,9 +13,11 @@ jobs:
   claude-response:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       issues: write
       pull-requests: write
+      actions: read
+      metadata: read
     steps:
       - name: Claude Code Action
         uses: anthropics/claude-code-action@beta
