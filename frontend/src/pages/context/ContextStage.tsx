@@ -51,12 +51,8 @@ const ContextStage: React.FC = () => {
     };
   }, [pollingInterval]);
 
-  useEffect(() => {
-    // Auto-trigger analysis when both documents are uploaded and no analysis exists
-    if (hasRequiredDocuments() && !analysis && !analysisLoading) {
-      handleStartAnalysis();
-    }
-  }, [documents, analysis]);
+  // Removed auto-trigger to allow manual analysis initiation
+  // Users can now review their uploads before starting analysis
 
   const loadDocuments = async () => {
     if (!token) return;
@@ -124,6 +120,17 @@ const ContextStage: React.FC = () => {
 
   const hasRequiredDocuments = () => {
     return getExistingDocument('resume') && getExistingDocument('job_description');
+  };
+
+  const hasDocumentsChangedSinceAnalysis = () => {
+    if (!analysis || !analysis.created_at) return false;
+    
+    const analysisTime = new Date(analysis.created_at).getTime();
+    
+    return documents.some(doc => {
+      const uploadTime = new Date(doc.created_at).getTime();
+      return uploadTime > analysisTime;
+    });
   };
 
   const handleStartAnalysis = async () => {
@@ -449,6 +456,26 @@ const ContextStage: React.FC = () => {
               </div>
             )}
             
+            {/* Manual Analysis Button */}
+            {!analysis && !analysisLoading && (
+              <div className="text-center p-6 bg-blue-50 border border-blue-200 rounded-lg">
+                <svg className="w-12 h-12 mx-auto mb-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+                <h3 className="text-lg font-medium text-blue-900 mb-2">Ready to Analyze</h3>
+                <p className="text-sm text-blue-700 mb-4">
+                  Your documents have been uploaded successfully. Click the button below to start the AI analysis.
+                </p>
+                <button
+                  onClick={handleStartAnalysis}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  disabled={analysisLoading}
+                >
+                  Analyze Documents
+                </button>
+              </div>
+            )}
+            
             {analysis && (
               <div className={`border rounded-lg p-6 ${
                 analysis.status === 'completed' ? 'bg-green-50 border-green-200' :
@@ -496,6 +523,35 @@ const ContextStage: React.FC = () => {
                     <p className="text-sm text-red-700 mb-4">
                       {analysis.error_message}
                     </p>
+                  )}
+                  
+                  {/* Redo Analysis Button */}
+                  {(analysis.status === 'completed' || analysis.status === 'failed') && !analysisLoading && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      {hasDocumentsChangedSinceAnalysis() && (
+                        <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                          <p className="text-sm text-yellow-800">
+                            <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Documents have been updated since this analysis
+                          </p>
+                        </div>
+                      )}
+                      <button
+                        onClick={handleStartAnalysis}
+                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        disabled={analysisLoading}
+                      >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Redo Analysis
+                      </button>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Re-analyze your documents with updated AI insights
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
