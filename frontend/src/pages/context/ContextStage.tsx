@@ -537,7 +537,7 @@ const ContextStage: React.FC = () => {
                             {analysis.role_fit_narrative && (
                               <div>
                                 <h5 className="text-sm font-semibold text-gray-900 mb-2">
-                                  Role-Fit Narrative (Why You Make Sense for {analysis?.job_analysis?.company || 'This Opportunity'})
+                                  Why You Make Sense as a {analysis?.job_analysis?.job_title || 'Candidate'} at {analysis?.job_analysis?.company || 'This Company'}
                                 </h5>
                                 <p className="text-sm text-gray-700 leading-relaxed">{analysis.role_fit_narrative}</p>
                               </div>

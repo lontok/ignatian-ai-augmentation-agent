@@ -62,13 +62,37 @@ export function transformConnectionsData(backendData: BackendConnectionsData | n
     return null;
   }
 
-  // If the data already has the enhanced format, return it as is
+  // If the data already has the enhanced format, validate and clean it
   if (backendData.skill_alignment?.direct_matches || backendData.skill_alignment?.transferable_skills || backendData.skill_alignment?.skill_gaps) {
+    // Filter out any "matches" that don't have real evidence
+    const validMatches = (backendData.skill_alignment.direct_matches || []).filter(
+      (match: any) => match.candidate_evidence && 
+      !match.candidate_evidence.includes('no direct evidence') &&
+      match.candidate_evidence !== '—'
+    );
+    
+    // Move invalid matches to gaps
+    const invalidMatches = (backendData.skill_alignment.direct_matches || []).filter(
+      (match: any) => !match.candidate_evidence || 
+      match.candidate_evidence.includes('no direct evidence') ||
+      match.candidate_evidence === '—'
+    );
+    
+    const additionalGaps = invalidMatches.map((match: any) => ({
+      missing_skill: match.skill,
+      job_requirement_snippet: match.job_requirement_snippet || match.skill,
+      importance: 'important',
+      learning_pathway: 'Gain experience in this area',
+      mitigation_strategy: 'Highlight related skills and demonstrate learning ability',
+      portfolio_project_opportunity: `Build a project demonstrating ${match.skill}`,
+      source_reference: match.source_reference
+    }));
+    
     return {
       skill_alignment: {
-        direct_matches: backendData.skill_alignment.direct_matches || [],
+        direct_matches: validMatches,
         transferable_skills: backendData.skill_alignment.transferable_skills || [],
-        skill_gaps: backendData.skill_alignment.skill_gaps || []
+        skill_gaps: [...(backendData.skill_alignment.skill_gaps || []), ...additionalGaps]
       }
     };
   }

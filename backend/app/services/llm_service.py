@@ -114,9 +114,12 @@ class LLMService:
         IMPORTANT RULES:
         1. Use EXACT QUOTES from the documents - do not paraphrase or summarize
         2. For job_requirement_snippet, copy the exact text from the job description
-        3. For candidate_evidence, copy the exact text from the resume (or mark as "— (no direct evidence)" if not found)
-        4. Include at least 3-5 direct matches and 2-4 gaps
-        5. Return ONLY the JSON object, no other text or formatting
+        3. A requirement is a DIRECT MATCH only if you can find EXACT EVIDENCE in the resume
+        4. If you cannot find direct evidence in the resume for a job requirement, it MUST go in skill_gaps, NOT direct_matches
+        5. For direct_matches, the candidate_evidence field must contain an actual quote from the resume
+        6. Never put "— (no direct evidence)" in the direct_matches section - those belong in skill_gaps
+        7. Include at least 3-5 direct matches (with real evidence) and 2-4 gaps
+        8. Return ONLY the JSON object, no other text or formatting
         """
         
         try:

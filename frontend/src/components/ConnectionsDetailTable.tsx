@@ -147,6 +147,9 @@ const ConnectionsDetailTable: React.FC<Props> = ({ connectionsAnalysis, companyN
               <tr key={`match-${index}`} className="hover:bg-gray-50">
                 <td className="px-6 py-4 align-top">
                   <div className="text-sm text-gray-900">
+                    {activeTab === 'all' && (
+                      <span className="text-green-600 mr-2">✓</span>
+                    )}
                     "{match.job_requirement_snippet || match.skill}"
                   </div>
                   {match.source_reference && (
@@ -166,6 +169,9 @@ const ConnectionsDetailTable: React.FC<Props> = ({ connectionsAnalysis, companyN
               <tr key={`gap-${index}`} className="hover:bg-gray-50">
                 <td className="px-6 py-4 align-top">
                   <div className="text-sm text-gray-900">
+                    {activeTab === 'all' && (
+                      <span className="text-red-600 mr-2">✗</span>
+                    )}
                     "{gap.job_requirement_snippet || gap.missing_skill}"
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
@@ -194,7 +200,7 @@ const ConnectionsDetailTable: React.FC<Props> = ({ connectionsAnalysis, companyN
         <ol className="text-sm text-gray-600 space-y-1">
           <li>1. Review your direct matches (✓) to understand your strengths for this role.</li>
           <li>2. Focus on the gaps (✗) to identify areas for improvement.</li>
-          <li>3. Use the next action column to plan how to address each gap before applying.</li>
+          <li>3. For gaps, note the "Next step" suggestions to build evidence before applying.</li>
         </ol>
       </div>
     </div>
