@@ -30,6 +30,7 @@ class LLMService:
         {resume_text}
 
         Provide a comprehensive but concise analysis focused on professional capabilities.
+        Return ONLY valid JSON without any markdown formatting or additional text.
         """
         
         try:
@@ -60,6 +61,7 @@ class LLMService:
         {job_text}
 
         Focus on what the employer is really looking for in an ideal candidate.
+        Return ONLY valid JSON without any markdown formatting or additional text.
         """
         
         try:
@@ -95,6 +97,7 @@ class LLMService:
         10. next_steps_suggestions: Recommendations for the candidate
 
         Focus on authentic connections and growth opportunities, not just surface-level matches.
+        Return ONLY valid JSON without any markdown formatting or additional text.
         """
         
         try:
@@ -109,23 +112,36 @@ class LLMService:
             print(f"Error finding connections: {str(e)}")
             return {"error": "Failed to analyze connections", "details": str(e)}
     
-    async def generate_context_summary(self, resume_analysis: Dict[str, Any], job_analysis: Dict[str, Any], connections: Dict[str, Any]) -> str:
-        """Generate a narrative summary for the Context stage completion"""
+    async def generate_context_summary(self, resume_analysis: Dict[str, Any], job_analysis: Dict[str, Any], connections: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate a structured summary for the Context stage completion"""
+        
+        company_name = job_analysis.get('company', 'the company')
+        job_title = job_analysis.get('job_title', 'the role')
         
         prompt = """
-        Create a compelling narrative summary that captures the Context stage of the Ignatian Pedagogical Paradigm. This should help the student understand their current situation in relation to their target role.
-
+        Create a structured analysis for the Context stage of the Ignatian Pedagogical Paradigm. 
+        
         Resume Analysis: {resume_analysis}
         Job Analysis: {job_analysis}
         Connections: {connections}
-
-        Write a 2-3 paragraph summary that:
-        1. Acknowledges their current strengths and experience
-        2. Highlights the most promising connections to the target role
-        3. Sets the stage for deeper exploration in the Experience stage
-        4. Uses encouraging, reflective tone consistent with Ignatian pedagogy
-
-        Focus on helping the student see both their potential and their growth edge.
+        
+        You MUST provide your response in valid JSON format with exactly these fields:
+        {{
+            "context_summary": "A 2-3 paragraph narrative summary that acknowledges their current strengths, highlights promising connections, and sets the stage for deeper exploration. Use an encouraging, reflective tone consistent with Ignatian pedagogy.",
+            "role_fit_narrative": "A concise 2-3 sentence explanation of why this candidate makes sense for {job_title} at {company_name}. Focus on the key transferable experiences and skills that position them well.",
+            "strengths": [
+                "List 3-5 key job requirements that are clearly evident in the candidate's resume",
+                "Each should be a specific skill, experience, or qualification that matches the job requirements",
+                "Keep each point concise but specific"
+            ],
+            "gaps": [
+                "List 2-4 job requirements that are not yet evident in the candidate's resume", 
+                "These should be areas for growth or skills to develop",
+                "Frame constructively as opportunities for development"
+            ]
+        }}
+        
+        IMPORTANT: Return ONLY the JSON object. Do not include any other text, markdown formatting, or code blocks.
         """
         
         try:
@@ -133,13 +149,44 @@ class LLMService:
                 prompt.format(
                     resume_analysis=resume_analysis,
                     job_analysis=job_analysis,
-                    connections=connections
+                    connections=connections,
+                    job_title=job_title,
+                    company_name=company_name
                 )
             )
-            return response.strip()
+            
+            # Parse the JSON response using the existing method
+            result = self._parse_json_response(response)
+            
+            # Check if parsing was successful
+            if "error" in result:
+                print(f"Error parsing context summary JSON: {result.get('error')}")
+                print(f"Raw response: {result.get('raw_response', '')[:500]}...")  # Log first 500 chars
+                
+                # Try to extract the fields manually if JSON parsing failed
+                return {
+                    "context_summary": "Unable to generate complete context summary. Please try again.",
+                    "role_fit_narrative": "",
+                    "strengths": [],
+                    "gaps": []
+                }
+            
+            # Ensure all required fields exist with proper defaults
+            return {
+                "context_summary": result.get("context_summary", ""),
+                "role_fit_narrative": result.get("role_fit_narrative", ""),
+                "strengths": result.get("strengths", []),
+                "gaps": result.get("gaps", [])
+            }
+                
         except Exception as e:
             print(f"Error generating context summary: {str(e)}")
-            return "Unable to generate context summary at this time."
+            return {
+                "context_summary": "Unable to generate context summary at this time.",
+                "role_fit_narrative": "",
+                "strengths": [],
+                "gaps": []
+            }
     
     async def _call_openai(self, prompt: str) -> str:
         """Make API call to OpenAI"""
@@ -149,7 +196,7 @@ class LLMService:
                 messages=[
                     {
                         "role": "system", 
-                        "content": "You are an expert career counselor and educator trained in the Ignatian Pedagogical Paradigm. You help students discover authentic connections between their background and career aspirations, focusing on growth, reflection, and purposeful action."
+                        "content": "You are an expert career counselor and educator trained in the Ignatian Pedagogical Paradigm. You help students discover authentic connections between their background and career aspirations, focusing on growth, reflection, and purposeful action. When asked to provide JSON output, always return valid JSON without any additional text, markdown formatting, or code blocks."
                     },
                     {"role": "user", "content": prompt}
                 ],

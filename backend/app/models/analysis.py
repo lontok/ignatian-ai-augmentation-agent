@@ -22,6 +22,11 @@ class DocumentAnalysis(Base):
     connections_analysis = Column(JSON, nullable=True)
     context_summary = Column(Text, nullable=True)
     
+    # Structured analysis fields
+    role_fit_narrative = Column(Text, nullable=True)
+    strengths = Column(JSON, nullable=True)  # Array of strings
+    gaps = Column(JSON, nullable=True)  # Array of strings
+    
     # Analysis status
     status = Column(String(50), default="pending")  # pending, processing, completed, failed
     error_message = Column(Text, nullable=True)

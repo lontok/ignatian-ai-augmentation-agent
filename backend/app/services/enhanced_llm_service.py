@@ -498,7 +498,7 @@ Apply the Ignatian framework and sophisticated matching process to provide a com
         except Exception as e:
             return self._create_error_response("connections analysis", str(e))
 
-    async def generate_context_summary_enhanced(self, resume_analysis: Dict[str, Any], job_analysis: Dict[str, Any], connections: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) -> str:
+    async def generate_context_summary_enhanced(self, resume_analysis: Dict[str, Any], job_analysis: Dict[str, Any], connections: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Enhanced context summary with personalized narrative arc"""
         
         prompt = f"""TASK: Create a compelling narrative summary for the CONTEXT stage of this student's Ignatian journey. This summary should help them understand their current situation with clarity, hope, and excitement for growth.
@@ -534,11 +534,23 @@ CONNECTIONS: {json.dumps(connections, indent=2)}
 
 Write a 3-4 paragraph narrative summary that follows the structure above. Use warm, encouraging language that helps the student see both their current strengths and exciting growth potential. Focus on authentic connections rather than superficial matches, and help them feel both confident and excited about the journey ahead."""
 
+        # For now, generate the narrative and return empty structured fields
+        # TODO: Update prompt to generate full structured response
         try:
             response = await self._call_openai_enhanced(prompt, user_context)
-            return response.strip()
+            return {
+                "context_summary": response.strip(),
+                "role_fit_narrative": "",
+                "strengths": [],
+                "gaps": []
+            }
         except Exception as e:
-            return "We're excited to explore your unique journey and the meaningful connections between your experiences and this opportunity. Let's dive deeper into understanding how your background and this role might align with your deeper sense of calling and purpose."
+            return {
+                "context_summary": "We're excited to explore your unique journey and the meaningful connections between your experiences and this opportunity. Let's dive deeper into understanding how your background and this role might align with your deeper sense of calling and purpose.",
+                "role_fit_narrative": "",
+                "strengths": [],
+                "gaps": []
+            }
 
     async def generate_reflection_synthesis_enhanced(self, selected_experiences: List[Dict[str, Any]], connections_analysis: Dict[str, Any], user_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Enhanced reflection synthesis using Ignatian discernment principles"""

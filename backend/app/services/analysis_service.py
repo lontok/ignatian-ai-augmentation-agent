@@ -94,11 +94,21 @@ class AnalysisService:
             
             # Step 4: Generate context summary
             print(f"Generating context summary for analysis {analysis_id}")
-            context_summary = await llm_service.generate_context_summary(
+            summary_result = await llm_service.generate_context_summary(
                 resume_analysis, job_analysis, connections
             )
             
-            analysis.context_summary = context_summary
+            # Log the result for debugging
+            print(f"Context summary result keys: {summary_result.keys()}")
+            print(f"Role fit narrative: {summary_result.get('role_fit_narrative', '')[:100]}...")
+            print(f"Strengths count: {len(summary_result.get('strengths', []))}")
+            print(f"Gaps count: {len(summary_result.get('gaps', []))}")
+            
+            # Save all the structured fields
+            analysis.context_summary = summary_result.get("context_summary", "")
+            analysis.role_fit_narrative = summary_result.get("role_fit_narrative", "")
+            analysis.strengths = summary_result.get("strengths", [])
+            analysis.gaps = summary_result.get("gaps", [])
             analysis.status = "completed"
             analysis.completed_at = datetime.utcnow()
             db.commit()

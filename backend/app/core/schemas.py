@@ -91,6 +91,9 @@ class DocumentAnalysisResponse(BaseModel):
     job_analysis: Optional[dict] = None
     connections_analysis: Optional[dict] = None
     context_summary: Optional[str] = None
+    role_fit_narrative: Optional[str] = None
+    strengths: Optional[List[str]] = None
+    gaps: Optional[List[str]] = None
     error_message: Optional[str] = None
     created_at: datetime
     completed_at: Optional[datetime] = None

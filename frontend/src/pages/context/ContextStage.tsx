@@ -20,6 +20,9 @@ interface AnalysisResult {
   job_analysis?: any;
   connections_analysis?: any;
   context_summary?: string;
+  role_fit_narrative?: string;
+  strengths?: string[];
+  gaps?: string[];
   error_message?: string;
   created_at: string;
   completed_at?: string;
@@ -512,10 +515,74 @@ const ContextStage: React.FC = () => {
                     </p>
                   )}
                   
-                  {analysis.status === 'completed' && analysis.context_summary && (
+                  {analysis.status === 'completed' && (analysis.context_summary || analysis.role_fit_narrative || analysis.strengths || analysis.gaps) && (
                     <div className="text-left bg-white rounded-md p-4 mb-4">
-                      <h4 className="font-medium mb-2">Context Analysis Summary:</h4>
-                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{analysis.context_summary}</p>
+                      {/* Debug: Log what we have */}
+                      {console.log('Analysis data:', { 
+                        has_summary: !!analysis.context_summary,
+                        has_narrative: !!analysis.role_fit_narrative,
+                        has_strengths: !!analysis.strengths,
+                        has_gaps: !!analysis.gaps,
+                        full_analysis: analysis
+                      })}
+                      
+                      {/* Structured format if available */}
+                      {(analysis.role_fit_narrative || analysis.strengths || analysis.gaps) ? (
+                        <div className="space-y-5">
+                          {/* Role-Fit Narrative */}
+                          {analysis.role_fit_narrative && (
+                            <div>
+                              <h5 className="text-sm font-semibold text-gray-900 mb-2">
+                                Role-Fit Narrative (Why You Make Sense for {analysis?.job_analysis?.company || 'This Opportunity'})
+                              </h5>
+                              <p className="text-sm text-gray-700 leading-relaxed">{analysis.role_fit_narrative}</p>
+                            </div>
+                          )}
+                          
+                          {/* Strengths */}
+                          {analysis.strengths && analysis.strengths.length > 0 && (
+                            <div>
+                              <h5 className="text-sm font-semibold text-gray-900 mb-2">
+                                Strengths — Job Description Requirements Evident in Your Resume
+                              </h5>
+                              <ul className="space-y-1.5 ml-1">
+                                {analysis.strengths.map((strength, index) => (
+                                  <li key={index} className="text-sm text-gray-700 flex items-start">
+                                    <span className="mr-2">•</span>
+                                    <span>{strength}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          
+                          {/* Gaps */}
+                          {analysis.gaps && analysis.gaps.length > 0 && (
+                            <div>
+                              <h5 className="text-sm font-semibold text-gray-900 mb-2">
+                                Gaps — Job Description Requirements Not Yet Evident in Your Resume
+                              </h5>
+                              <ul className="space-y-1.5 ml-1">
+                                {analysis.gaps.map((gap, index) => (
+                                  <li key={index} className="text-sm text-gray-700 flex items-start">
+                                    <span className="mr-2">•</span>
+                                    <span>{gap}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      ) : analysis.context_summary ? (
+                        /* Fallback to plain text summary */
+                        <div>
+                          <h4 className="font-medium mb-2 text-gray-900">Context Analysis Summary:</h4>
+                          <p className="text-sm text-gray-700 whitespace-pre-wrap">{analysis.context_summary}</p>
+                        </div>
+                      ) : (
+                        /* No content available */
+                        <p className="text-sm text-gray-500 italic">No analysis content available. Please try running the analysis again.</p>
+                      )}
                     </div>
                   )}
                   
