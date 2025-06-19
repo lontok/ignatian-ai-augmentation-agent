@@ -90,7 +90,10 @@ class LLMService:
                     {{
                         "skill": "exact job requirement text in quotes",
                         "job_requirement_snippet": "exact quote from job description",
-                        "candidate_evidence": "exact quote from resume that shows this skill",
+                        "candidate_evidence": [
+                            "first exact quote from resume that shows this skill",
+                            "second exact quote from resume that provides additional evidence (if available)"
+                        ],
                         "role_application": "how this applies to the role",
                         "confidence_score": 8,
                         "strength_level": "strong",
@@ -116,10 +119,12 @@ class LLMService:
         2. For job_requirement_snippet, copy the exact text from the job description
         3. A requirement is a DIRECT MATCH only if you can find EXACT EVIDENCE in the resume
         4. If you cannot find direct evidence in the resume for a job requirement, it MUST go in skill_gaps, NOT direct_matches
-        5. For direct_matches, the candidate_evidence field must contain an actual quote from the resume
-        6. Never put "— (no direct evidence)" in the direct_matches section - those belong in skill_gaps
-        7. Include at least 3-5 direct matches (with real evidence) and 2-4 gaps
-        8. Return ONLY the JSON object, no other text or formatting
+        5. For direct_matches, the candidate_evidence field is now an ARRAY of 1-2 exact quotes from the resume
+        6. Try to find 2 different pieces of evidence from the resume for each requirement when possible
+        7. Each evidence quote should be from a different section/experience in the resume
+        8. Never put "— (no direct evidence)" in the direct_matches section - those belong in skill_gaps
+        9. Include at least 3-5 direct matches (with real evidence) and 2-4 gaps
+        10. Return ONLY the JSON object, no other text or formatting
         """
         
         try:

@@ -66,16 +66,33 @@ export function transformConnectionsData(backendData: BackendConnectionsData | n
   if (backendData.skill_alignment?.direct_matches || backendData.skill_alignment?.transferable_skills || backendData.skill_alignment?.skill_gaps) {
     // Filter out any "matches" that don't have real evidence
     const validMatches = (backendData.skill_alignment.direct_matches || []).filter(
-      (match: any) => match.candidate_evidence && 
-      !match.candidate_evidence.includes('no direct evidence') &&
-      match.candidate_evidence !== '—'
+      (match: any) => {
+        // Handle both string and array formats for candidate_evidence
+        if (Array.isArray(match.candidate_evidence)) {
+          return match.candidate_evidence.length > 0 && 
+            match.candidate_evidence.some((evidence: string) => 
+              evidence && !evidence.includes('no direct evidence') && evidence !== '—'
+            );
+        }
+        return match.candidate_evidence && 
+          !match.candidate_evidence.includes('no direct evidence') &&
+          match.candidate_evidence !== '—';
+      }
     );
     
     // Move invalid matches to gaps
     const invalidMatches = (backendData.skill_alignment.direct_matches || []).filter(
-      (match: any) => !match.candidate_evidence || 
-      match.candidate_evidence.includes('no direct evidence') ||
-      match.candidate_evidence === '—'
+      (match: any) => {
+        if (Array.isArray(match.candidate_evidence)) {
+          return match.candidate_evidence.length === 0 || 
+            match.candidate_evidence.every((evidence: string) => 
+              !evidence || evidence.includes('no direct evidence') || evidence === '—'
+            );
+        }
+        return !match.candidate_evidence || 
+          match.candidate_evidence.includes('no direct evidence') ||
+          match.candidate_evidence === '—';
+      }
     );
     
     const additionalGaps = invalidMatches.map((match: any) => ({

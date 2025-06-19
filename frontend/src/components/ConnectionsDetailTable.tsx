@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 interface DirectMatch {
   skill: string;
   job_requirement_snippet?: string;
-  candidate_evidence: string;
+  candidate_evidence: string | string[];
   role_application: string;
   confidence_score: number;
   strength_level: string;
@@ -157,9 +157,20 @@ const ConnectionsDetailTable: React.FC<Props> = ({ connectionsAnalysis, companyN
                   )}
                 </td>
                 <td className="px-6 py-4 align-top">
-                  <div className="text-sm text-gray-900">
-                    "{match.candidate_evidence}"
-                  </div>
+                  {Array.isArray(match.candidate_evidence) ? (
+                    <div className="space-y-3">
+                      {match.candidate_evidence.map((evidence: string, evidenceIndex: number) => (
+                        <div key={evidenceIndex} className="text-sm text-gray-900">
+                          <span className="text-gray-400 mr-2">{evidenceIndex + 1}.</span>
+                          "{evidence}"
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-900">
+                      "{match.candidate_evidence}"
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
