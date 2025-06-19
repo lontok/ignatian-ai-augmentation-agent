@@ -621,7 +621,10 @@ const ReflectionStage: React.FC = () => {
                           Excellent reflection! You've completed {getCompletedReflections()} deep reflections. 
                           You're ready to move forward and create your action plan.
                         </p>
-                        <button className="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors">
+                        <button 
+                          onClick={() => navigate('/action')}
+                          className="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors"
+                        >
                           Continue to Action Stage
                         </button>
                       </div>

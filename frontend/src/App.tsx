@@ -8,6 +8,8 @@ import SimpleLoggedIn from './pages/SimpleLoggedIn';
 import ContextStage from './pages/context/ContextStage';
 import ExperienceStage from './pages/experience/ExperienceStage';
 import ReflectionStage from './pages/reflection/ReflectionStage';
+import ActionStage from './pages/action/ActionStage';
+import EvaluationStage from './pages/evaluation/EvaluationStage';
 import './App.css';
 
 function App() {
@@ -56,6 +58,22 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <ReflectionStage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/action" 
+                element={
+                  <ProtectedRoute>
+                    <ActionStage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/evaluation" 
+                element={
+                  <ProtectedRoute>
+                    <EvaluationStage />
                   </ProtectedRoute>
                 } 
               />
