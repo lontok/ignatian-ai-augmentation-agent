@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import DocumentUpload from '../../components/documents/DocumentUpload';
+import ConnectionsDetailTable from '../../components/ConnectionsDetailTable';
+import { transformConnectionsData } from '../../utils/transformConnectionsData';
 
 interface Document {
   id: number;
@@ -39,6 +41,7 @@ const ContextStage: React.FC = () => {
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+  const [showDetailedEvidence, setShowDetailedEvidence] = useState(false);
 
   useEffect(() => {
     loadDocuments();
@@ -515,76 +518,78 @@ const ContextStage: React.FC = () => {
                     </p>
                   )}
                   
-                  {analysis.status === 'completed' && (analysis.context_summary || analysis.role_fit_narrative || analysis.strengths || analysis.gaps) && (
-                    <div className="text-left bg-white rounded-md p-4 mb-4">
-                      {/* Debug: Log what we have */}
-                      {console.log('Analysis data:', { 
-                        has_summary: !!analysis.context_summary,
-                        has_narrative: !!analysis.role_fit_narrative,
-                        has_strengths: !!analysis.strengths,
-                        has_gaps: !!analysis.gaps,
-                        full_analysis: analysis
-                      })}
-                      
-                      {/* Structured format if available */}
-                      {(analysis.role_fit_narrative || analysis.strengths || analysis.gaps) ? (
-                        <div className="space-y-5">
-                          {/* Role-Fit Narrative */}
-                          {analysis.role_fit_narrative && (
-                            <div>
-                              <h5 className="text-sm font-semibold text-gray-900 mb-2">
-                                Role-Fit Narrative (Why You Make Sense for {analysis?.job_analysis?.company || 'This Opportunity'})
-                              </h5>
-                              <p className="text-sm text-gray-700 leading-relaxed">{analysis.role_fit_narrative}</p>
-                            </div>
-                          )}
-                          
-                          {/* Strengths */}
-                          {analysis.strengths && analysis.strengths.length > 0 && (
-                            <div>
-                              <h5 className="text-sm font-semibold text-gray-900 mb-2">
-                                Strengths — Job Description Requirements Evident in Your Resume
-                              </h5>
-                              <ul className="space-y-1.5 ml-1">
-                                {analysis.strengths.map((strength, index) => (
-                                  <li key={index} className="text-sm text-gray-700 flex items-start">
-                                    <span className="mr-2">•</span>
-                                    <span>{strength}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                          
-                          {/* Gaps */}
-                          {analysis.gaps && analysis.gaps.length > 0 && (
-                            <div>
-                              <h5 className="text-sm font-semibold text-gray-900 mb-2">
-                                Gaps — Job Description Requirements Not Yet Evident in Your Resume
-                              </h5>
-                              <ul className="space-y-1.5 ml-1">
-                                {analysis.gaps.map((gap, index) => (
-                                  <li key={index} className="text-sm text-gray-700 flex items-start">
-                                    <span className="mr-2">•</span>
-                                    <span>{gap}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                      ) : analysis.context_summary ? (
-                        /* Fallback to plain text summary */
-                        <div>
-                          <h4 className="font-medium mb-2 text-gray-900">Context Analysis Summary:</h4>
-                          <p className="text-sm text-gray-700 whitespace-pre-wrap">{analysis.context_summary}</p>
-                        </div>
-                      ) : (
-                        /* No content available */
-                        <p className="text-sm text-gray-500 italic">No analysis content available. Please try running the analysis again.</p>
-                      )}
-                    </div>
-                  )}
+                  {analysis.status === 'completed' && (analysis.context_summary || analysis.role_fit_narrative || analysis.strengths || analysis.gaps) && (() => {
+                    // Debug: Log what we have
+                    console.log('Analysis data:', { 
+                      has_summary: !!analysis.context_summary,
+                      has_narrative: !!analysis.role_fit_narrative,
+                      has_strengths: !!analysis.strengths,
+                      has_gaps: !!analysis.gaps,
+                      full_analysis: analysis
+                    });
+                    
+                    return (
+                      <div className="text-left bg-white rounded-md p-4 mb-4">
+                        {/* Structured format if available */}
+                        {(analysis.role_fit_narrative || analysis.strengths || analysis.gaps) ? (
+                          <div className="space-y-5">
+                            {/* Role-Fit Narrative */}
+                            {analysis.role_fit_narrative && (
+                              <div>
+                                <h5 className="text-sm font-semibold text-gray-900 mb-2">
+                                  Role-Fit Narrative (Why You Make Sense for {analysis?.job_analysis?.company || 'This Opportunity'})
+                                </h5>
+                                <p className="text-sm text-gray-700 leading-relaxed">{analysis.role_fit_narrative}</p>
+                              </div>
+                            )}
+                            
+                            {/* Strengths */}
+                            {analysis.strengths && analysis.strengths.length > 0 && (
+                              <div>
+                                <h5 className="text-sm font-semibold text-gray-900 mb-2">
+                                  Strengths — Job Description Requirements Evident in Your Resume
+                                </h5>
+                                <ul className="space-y-1.5 ml-1">
+                                  {analysis.strengths.map((strength, index) => (
+                                    <li key={index} className="text-sm text-gray-700 flex items-start">
+                                      <span className="mr-2">•</span>
+                                      <span>{strength}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            
+                            {/* Gaps */}
+                            {analysis.gaps && analysis.gaps.length > 0 && (
+                              <div>
+                                <h5 className="text-sm font-semibold text-gray-900 mb-2">
+                                  Gaps — Job Description Requirements Not Yet Evident in Your Resume
+                                </h5>
+                                <ul className="space-y-1.5 ml-1">
+                                  {analysis.gaps.map((gap, index) => (
+                                    <li key={index} className="text-sm text-gray-700 flex items-start">
+                                      <span className="mr-2">•</span>
+                                      <span>{gap}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        ) : analysis.context_summary ? (
+                          /* Fallback to plain text summary */
+                          <div>
+                            <h4 className="font-medium mb-2 text-gray-900">Context Analysis Summary:</h4>
+                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{analysis.context_summary}</p>
+                          </div>
+                        ) : (
+                          /* No content available */
+                          <p className="text-sm text-gray-500 italic">No analysis content available. Please try running the analysis again.</p>
+                        )}
+                      </div>
+                    );
+                  })()}
                   
                   {analysis.error_message && (
                     <p className="text-sm text-red-700 mb-4">
@@ -620,11 +625,61 @@ const ContextStage: React.FC = () => {
                       </p>
                     </div>
                   )}
+                  
+                  {/* Show Detailed Evidence Button */}
+                  {analysis.status === 'completed' && analysis.connections_analysis && (
+                    <div className="mt-4">
+                      <button
+                        onClick={() => setShowDetailedEvidence(!showDetailedEvidence)}
+                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <svg 
+                          className={`w-4 h-4 mr-2 transition-transform ${showDetailedEvidence ? 'rotate-180' : ''}`} 
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                        {showDetailedEvidence ? 'Hide' : 'Show'} Detailed Evidence
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
           </div>
         )}
+        
+        {/* Detailed Evidence Table */}
+        {showDetailedEvidence && analysis?.connections_analysis && (() => {
+          const transformedData = transformConnectionsData(analysis.connections_analysis);
+          console.log('Original connections data:', analysis.connections_analysis);
+          console.log('Transformed connections data:', transformedData);
+          
+          if (!transformedData) {
+            return (
+              <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                <div className="text-yellow-800">
+                  <h3 className="text-lg font-medium mb-2">Unable to Display Detailed Evidence</h3>
+                  <p className="text-sm">
+                    The detailed evidence table is currently unavailable. The analysis data format may need to be updated.
+                    Please try running the analysis again or contact support if the issue persists.
+                  </p>
+                </div>
+              </div>
+            );
+          }
+          
+          return (
+            <div className="mt-6">
+              <ConnectionsDetailTable 
+                connectionsAnalysis={transformedData}
+                companyName={analysis?.job_analysis?.company}
+              />
+            </div>
+          );
+        })()}
 
         {/* Next Steps */}
         <div className="text-center">

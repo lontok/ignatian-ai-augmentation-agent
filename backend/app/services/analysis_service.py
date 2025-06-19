@@ -89,6 +89,14 @@ class AnalysisService:
             print(f"Finding connections for analysis {analysis_id}")
             connections = await llm_service.find_connections(resume_analysis, job_analysis)
             
+            # Step 3b: Extract detailed evidence with quotes
+            print(f"Extracting detailed evidence for analysis {analysis_id}")
+            detailed_evidence = await llm_service.extract_detailed_evidence(resume_text, job_text)
+            
+            # Merge detailed evidence into connections if successful
+            if detailed_evidence and "skill_alignment" in detailed_evidence:
+                connections["skill_alignment"] = detailed_evidence["skill_alignment"]
+            
             analysis.connections_analysis = connections
             db.commit()
             

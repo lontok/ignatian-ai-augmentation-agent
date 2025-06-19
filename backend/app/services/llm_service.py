@@ -71,6 +71,66 @@ class LLMService:
             print(f"Error analyzing job description: {str(e)}")
             return {"error": "Failed to analyze job description", "details": str(e)}
     
+    async def extract_detailed_evidence(self, resume_text: str, job_text: str) -> Dict[str, Any]:
+        """Extract specific quotes and evidence from resume and job description"""
+        
+        prompt = """
+        Extract EXACT QUOTES from the job description and resume to show evidence of matches and gaps.
+        
+        Job Description:
+        {job_text}
+        
+        Resume:
+        {resume_text}
+        
+        Provide a JSON response with this EXACT structure:
+        {{
+            "skill_alignment": {{
+                "direct_matches": [
+                    {{
+                        "skill": "exact job requirement text in quotes",
+                        "job_requirement_snippet": "exact quote from job description",
+                        "candidate_evidence": "exact quote from resume that shows this skill",
+                        "role_application": "how this applies to the role",
+                        "confidence_score": 8,
+                        "strength_level": "strong",
+                        "source_reference": "Section from job description like 'Requirements', 'Responsibilities', 'What are we looking for?'"
+                    }}
+                ],
+                "skill_gaps": [
+                    {{
+                        "missing_skill": "exact job requirement text in quotes",
+                        "job_requirement_snippet": "exact quote from job description",
+                        "importance": "critical/important/nice-to-have",
+                        "learning_pathway": "suggested way to develop this",
+                        "mitigation_strategy": "how to address this gap",
+                        "portfolio_project_opportunity": "project idea to demonstrate this",
+                        "source_reference": "Section from job description like 'Requirements', 'Responsibilities', 'What are we looking for?'"
+                    }}
+                ]
+            }}
+        }}
+        
+        IMPORTANT RULES:
+        1. Use EXACT QUOTES from the documents - do not paraphrase or summarize
+        2. For job_requirement_snippet, copy the exact text from the job description
+        3. For candidate_evidence, copy the exact text from the resume (or mark as "— (no direct evidence)" if not found)
+        4. Include at least 3-5 direct matches and 2-4 gaps
+        5. Return ONLY the JSON object, no other text or formatting
+        """
+        
+        try:
+            response = await self._call_openai(
+                prompt.format(
+                    job_text=job_text,
+                    resume_text=resume_text
+                )
+            )
+            return self._parse_json_response(response)
+        except Exception as e:
+            print(f"Error extracting detailed evidence: {str(e)}")
+            return {"error": "Failed to extract evidence", "details": str(e)}
+    
     async def find_connections(self, resume_analysis: Dict[str, Any], job_analysis: Dict[str, Any]) -> Dict[str, Any]:
         """Find connections between resume and job requirements using Ignatian context"""
         
