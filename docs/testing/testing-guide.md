@@ -206,8 +206,13 @@ COMPANY VALUES
    ```
    Action: Wait for analysis completion
    Expected: 
-   - Progress indicators show processing status
-   - Analysis completes within 30-60 seconds
+   - Progress bar shows real-time updates for 5 analysis steps:
+     * Step 1: "Analyzing your background and experiences..." (20%)
+     * Step 2: "Understanding role requirements..." (40%)
+     * Step 3: "Finding meaningful connections..." (60%)
+     * Step 4: "Extracting specific evidence..." (80%)
+     * Step 5: "Creating your personalized summary..." (100%)
+   - Analysis completes within 45-60 seconds total
    - Context summary appears with insights about candidate-role fit
    - "Continue to Experience Stage" button becomes available
    ```
@@ -218,7 +223,13 @@ COMPANY VALUES
    - Resume skills extraction (Data Analysis, Marketing, Communication)
    - Job requirements identification (SQL, collaboration, customer focus)
    - Initial connections between candidate background and role
+   - Multiple evidence points (1-2 quotes) per matched requirement in the Detailed Skills Evidence table
    - Encouraging tone with growth opportunities mentioned
+   
+   Verify the Detailed Skills Evidence table shows:
+   - Direct matches with numbered evidence points (e.g., "1. Quote one" "2. Quote two")
+   - Skill gaps with mitigation strategies
+   - Tab navigation between All/Matches/Gaps views
    ```
 
 #### **Stage 2: Experience Stage Testing**
@@ -557,6 +568,60 @@ curl -X GET http://localhost:8000/api/analysis/latest/results \
 
 ## LLM Integration Testing
 
+### Multiple LLM Calls Pipeline Testing
+
+The Context Stage analysis involves **5 separate LLM API calls** executed in sequence. Each call must be tested individually and as part of the complete pipeline.
+
+#### **Pipeline Overview**
+```python
+# The 5-step analysis pipeline with expected timings:
+1. Resume Analysis (17-20 seconds)
+2. Job Description Analysis (5-7 seconds)  
+3. Connection Finding (8-10 seconds)
+4. Evidence Extraction (10-12 seconds)
+5. Summary Generation (5-7 seconds)
+# Total: 45-60 seconds
+```
+
+#### **Progress Tracking Test**
+```python
+# Test progress updates during analysis
+async def test_analysis_progress_tracking():
+    from app.services.analysis_service import AnalysisService
+    
+    analysis_service = AnalysisService()
+    analysis_id = 1
+    
+    # Monitor progress updates
+    progress_updates = []
+    
+    async def track_progress():
+        while True:
+            status = await analysis_service.get_analysis_status(analysis_id)
+            progress_updates.append({
+                'step': status.get('progress_step'),
+                'percentage': status.get('progress_percentage'),
+                'message': status.get('progress_message')
+            })
+            if status.get('status') == 'completed':
+                break
+            await asyncio.sleep(0.5)
+    
+    # Start analysis and tracking
+    analysis_task = asyncio.create_task(
+        analysis_service._perform_analysis(analysis_id, resume_text, job_text)
+    )
+    tracking_task = asyncio.create_task(track_progress())
+    
+    await analysis_task
+    await tracking_task
+    
+    # Verify progress tracking
+    assert len(progress_updates) >= 5  # At least one update per step
+    assert progress_updates[-1]['percentage'] == 100
+    print("✅ Progress tracking test passed")
+```
+
 ### OpenAI API Integration
 
 #### **Basic LLM Functionality**
@@ -590,6 +655,85 @@ async def test_job_analysis():
 # Run tests
 asyncio.run(test_resume_analysis())
 asyncio.run(test_job_analysis())
+```
+
+#### **Enhanced Evidence Extraction Testing**
+```python
+# Test multiple evidence points extraction
+async def test_evidence_extraction_array():
+    """Test that evidence extraction returns arrays with up to 2 quotes"""
+    from app.services.llm_service import llm_service
+    
+    resume_text = """
+    John Smith - Software Engineer
+    Experience:
+    - Developed Python data analysis tools for marketing team
+    - Created automated reporting dashboards using SQL and Tableau
+    - Led cross-functional team of 5 engineers on customer analytics project
+    - Implemented machine learning models for customer segmentation
+    """
+    
+    job_text = """
+    Data Analyst Position
+    Requirements:
+    - Experience with Python for data analysis
+    - SQL and data visualization skills
+    - Team collaboration abilities
+    """
+    
+    result = await llm_service.extract_detailed_evidence(resume_text, job_text)
+    
+    # Verify evidence is returned as arrays
+    assert 'direct_evidence' in result
+    for evidence in result['direct_evidence']:
+        assert 'candidate_evidence' in evidence
+        # Check if it's an array
+        assert isinstance(evidence['candidate_evidence'], list)
+        # Should have 1-2 evidence points
+        assert 1 <= len(evidence['candidate_evidence']) <= 2
+        # Each evidence should be a non-empty string
+        for quote in evidence['candidate_evidence']:
+            assert isinstance(quote, str)
+            assert len(quote) > 0
+    
+    print("✅ Evidence array extraction test passed")
+
+async def test_evidence_backward_compatibility():
+    """Test that frontend handles both string and array evidence formats"""
+    from frontend.src.utils.transformConnectionsData import transformConnectionsData
+    
+    # Test with string format (old)
+    old_format = {
+        'skill_alignment': {
+            'direct_matches': [{
+                'skill': 'Python',
+                'candidate_evidence': 'Developed Python tools',  # String
+                'confidence_score': 9.0
+            }]
+        }
+    }
+    
+    # Test with array format (new)
+    new_format = {
+        'skill_alignment': {
+            'direct_matches': [{
+                'skill': 'Python',
+                'candidate_evidence': [  # Array
+                    'Developed Python data analysis tools',
+                    'Implemented ML models using Python'
+                ],
+                'confidence_score': 9.0
+            }]
+        }
+    }
+    
+    # Both should transform successfully
+    old_result = transformConnectionsData(old_format)
+    new_result = transformConnectionsData(new_format)
+    
+    assert old_result is not None
+    assert new_result is not None
+    print("✅ Backward compatibility test passed")
 ```
 
 #### **Enhanced LLM Service Testing**
@@ -1204,6 +1348,36 @@ SELECT * FROM pg_stat_activity;
 SELECT * FROM pg_stat_user_tables;
 ```
 
+#### **LLM Pipeline Performance Benchmarks**
+```python
+# Expected timings for each LLM call
+PERFORMANCE_BENCHMARKS = {
+    'resume_analysis': {'min': 15, 'max': 25, 'typical': 20},
+    'job_analysis': {'min': 4, 'max': 10, 'typical': 7},
+    'connections_finding': {'min': 6, 'max': 15, 'typical': 10},
+    'evidence_extraction': {'min': 8, 'max': 18, 'typical': 12},
+    'summary_generation': {'min': 4, 'max': 10, 'typical': 7},
+    'total_pipeline': {'min': 40, 'max': 75, 'typical': 60}
+}
+
+async def test_pipeline_performance():
+    """Test that LLM pipeline completes within expected timeframes"""
+    import time
+    from app.services.analysis_service import AnalysisService
+    
+    start_time = time.time()
+    timings = {}
+    
+    # Track each step
+    # ... (analysis code with timing for each step)
+    
+    total_time = time.time() - start_time
+    
+    # Verify performance
+    assert total_time <= PERFORMANCE_BENCHMARKS['total_pipeline']['max']
+    print(f"✅ Pipeline completed in {total_time:.1f}s (benchmark: {PERFORMANCE_BENCHMARKS['total_pipeline']['typical']}s)")
+```
+
 ---
 
 ## Test Execution Checklist
@@ -1220,7 +1394,8 @@ SELECT * FROM pg_stat_user_tables;
 - [ ] Complete IPP journey (Context → Evaluation)
 - [ ] Google OAuth authentication flow
 - [ ] Document upload and processing
-- [ ] LLM analysis completion
+- [ ] LLM analysis completion with progress tracking (5 steps)
+- [ ] Multiple evidence points display (1-2 quotes per requirement)
 - [ ] Experience selection and elaboration
 - [ ] Reflection synthesis and prompts
 - [ ] Portfolio project generation

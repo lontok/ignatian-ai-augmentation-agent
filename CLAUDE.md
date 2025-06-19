@@ -40,16 +40,22 @@ The application follows the five-stage Ignatian Pedagogical Paradigm:
 
 ## Development Status
 
-**Current State**: Google OAuth2 authentication system implemented and ready for testing.
+**Current State**: Complete IPP implementation with all 5 stages functional. Enhanced LLM integration with multiple evidence points per job requirement.
 
 **Completed Features**:
 - Google OAuth2 authentication (backend + frontend)
 - User management and JWT tokens
 - Protected routes and authentication context
-- Basic dashboard with IPP stage overview
-- Database models and migrations setup
+- Full IPP journey implementation (Context → Experience → Reflection → Action → Evaluation)
+- Document upload and LLM analysis with progress tracking
+- Enhanced evidence extraction (up to 2 quotes per requirement)
+- Portfolio project generation with values integration
+- Mock interview and self-assessment framework
 
-**Next Steps**: Document upload functionality and LLM integration for Context stage.
+**Recent Updates**:
+- Modified LLM prompts to return multiple evidence points per job requirement
+- Added real-time progress tracking for the 5-step analysis pipeline
+- Updated frontend to handle both string and array evidence formats
 
 ## Commands
 
@@ -116,3 +122,24 @@ The app uses Google OAuth2 for authentication. Required environment variables:
 - Primary: Students preparing for job applications
 - Secondary: Faculty mentors and researchers
 - Focus: Business and career development education
+
+## Documentation Structure
+
+**Key Documentation Locations**:
+- `/docs/` - Main documentation directory
+  - `/docs/ai-llm/` - LLM and AI-related documentation
+    - `llm-prompt-engineering-guide.md` - Comprehensive prompt engineering guide
+    - `prompt-optimization-summary.md` - Performance metrics and improvements
+  - `/docs/testing/` - Testing documentation
+    - `testing-guide.md` - Main testing guide with manual and automated procedures
+    - `google-oauth-test-plan.md` - OAuth authentication test procedures
+    - `ui-testing-plan-scratchpad.md` - UI testing plans for IPP stages
+  - `prd.md` - Product Requirements Document
+  - `README.md` - Project overview and setup instructions
+
+**Important Files**:
+- `/backend/app/services/llm_service.py` - Core LLM service with analysis pipeline
+- `/backend/app/services/enhanced_llm_service.py` - Enhanced LLM service with advanced prompts
+- `/backend/app/services/prompt_templates.py` - Organized prompt templates
+- `/frontend/src/components/ConnectionsDetailTable.tsx` - Evidence display component
+- `/frontend/src/utils/transformConnectionsData.ts` - Data transformation utilities

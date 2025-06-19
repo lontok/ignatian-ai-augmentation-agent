@@ -13,12 +13,20 @@ Test the complete user journey through all 5 IPP stages, validating LLM integrat
 
 ### Key Validations:
 - File upload functionality (PDF, DOCX, TXT)
+- Progress bar shows 5 distinct steps with percentages:
+  - Step 1: Resume analysis (20%)
+  - Step 2: Job analysis (40%)
+  - Step 3: Connections finding (60%)
+  - Step 4: Evidence extraction (80%)
+  - Step 5: Summary generation (100%)
 - LLM correctly extracts:
   - Skills and experience from resume
   - Job requirements from description
   - Company context and industry info
+  - Multiple evidence quotes (1-2) per requirement
 - Error handling for invalid files
 - Loading states during LLM processing
+- Total completion time: 45-60 seconds
 
 ### Test Scenarios:
 - Upload various file formats
@@ -143,7 +151,30 @@ Test the complete user journey through all 5 IPP stages, validating LLM integrat
 
 ## Current Status
 - ✅ Google OAuth authentication tested and documented
-- 🔄 Next: Stage 1 (Context) implementation and testing
+- ✅ Stage 1 (Context) - Document upload and LLM analysis implemented
+- ✅ Progress tracking with 5-step pipeline implemented
+- ✅ Multiple evidence extraction (1-2 quotes per requirement) implemented
+- 🔄 All 5 IPP stages now functional - comprehensive testing needed
+
+## Recent Updates Testing Focus
+
+### Multiple Evidence Points
+- Verify ConnectionsDetailTable displays 1-2 evidence quotes per requirement
+- Test numbered display format (1. First quote, 2. Second quote)
+- Verify backward compatibility with string format
+- Test tab navigation (All/Matches/Gaps)
+
+### Progress Tracking
+- Verify smooth progress bar animations
+- Test progress messages match the 5 steps
+- Confirm timing aligns with benchmarks
+- Test interruption/error scenarios
+
+### Performance Testing
+- Measure total pipeline time (target: 45-60s)
+- Monitor individual step timings
+- Test with various document sizes
+- Check concurrent user handling
 
 ## Notes
 - This is a living document - update as we progress through testing
