@@ -94,6 +94,8 @@ class DocumentAnalysisResponse(BaseModel):
     role_fit_narrative: Optional[str] = None
     strengths: Optional[List[str]] = None
     gaps: Optional[List[str]] = None
+    progress_step: Optional[str] = None
+    progress_message: Optional[str] = None
     error_message: Optional[str] = None
     created_at: datetime
     completed_at: Optional[datetime] = None

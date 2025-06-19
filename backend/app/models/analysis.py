@@ -29,6 +29,8 @@ class DocumentAnalysis(Base):
     
     # Analysis status
     status = Column(String(50), default="pending")  # pending, processing, completed, failed
+    progress_step = Column(String(100), nullable=True)  # Current step being processed
+    progress_message = Column(Text, nullable=True)  # User-friendly message
     error_message = Column(Text, nullable=True)
     
     # Timestamps

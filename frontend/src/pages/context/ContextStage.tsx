@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import DocumentUpload from '../../components/documents/DocumentUpload';
 import ConnectionsDetailTable from '../../components/ConnectionsDetailTable';
+import AnalysisProgress from '../../components/AnalysisProgress';
 import { transformConnectionsData } from '../../utils/transformConnectionsData';
 
 interface Document {
@@ -25,6 +26,8 @@ interface AnalysisResult {
   role_fit_narrative?: string;
   strengths?: string[];
   gaps?: string[];
+  progress_step?: string;
+  progress_message?: string;
   error_message?: string;
   created_at: string;
   completed_at?: string;
@@ -167,6 +170,8 @@ const ContextStage: React.FC = () => {
           id: data.analysis_id,
           status: data.status,
           created_at: new Date().toISOString(),
+          progress_step: 'initializing',
+          progress_message: 'Starting document analysis...'
         });
         
         // Start polling for updates
@@ -209,7 +214,7 @@ const ContextStage: React.FC = () => {
       } catch (error) {
         console.error('Failed to poll analysis status:', error);
       }
-    }, 3000); // Poll every 3 seconds
+    }, 500); // Poll every 0.5 seconds for better progress tracking
 
     setPollingInterval(interval);
   };
@@ -493,29 +498,28 @@ const ContextStage: React.FC = () => {
                   analysis.status === 'failed' ? 'text-red-800' :
                   'text-blue-800'
                 }`}>
-                  {(analysis.status === 'pending' || analysis.status === 'processing') && (
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                  )}
-                  
-                  {analysis.status === 'completed' && (
-                    <svg className="w-8 h-8 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  )}
-                  
-                  {analysis.status === 'failed' && (
-                    <svg className="w-8 h-8 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  )}
-                  
-                  <h3 className="text-lg font-medium mb-2">{getAnalysisStatusText()}</h3>
-                  
-                  {analysis.status === 'processing' && (
-                    <p className="text-sm mb-4">
-                      Our AI is analyzing your resume and job description to identify 
-                      connections and opportunities. This typically takes 1-2 minutes.
-                    </p>
+                  {(analysis.status === 'pending' || analysis.status === 'processing') ? (
+                    <AnalysisProgress 
+                      status={analysis.status}
+                      progressStep={analysis.progress_step}
+                      progressMessage={analysis.progress_message}
+                    />
+                  ) : (
+                    <>
+                      {analysis.status === 'completed' && (
+                        <svg className="w-8 h-8 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      )}
+                      
+                      {analysis.status === 'failed' && (
+                        <svg className="w-8 h-8 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      )}
+                      
+                      <h3 className="text-lg font-medium mb-2">{getAnalysisStatusText()}</h3>
+                    </>
                   )}
                   
                   {analysis.status === 'completed' && (analysis.context_summary || analysis.role_fit_narrative || analysis.strengths || analysis.gaps) && (() => {

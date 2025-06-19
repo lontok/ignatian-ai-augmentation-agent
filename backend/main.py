@@ -1,9 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+import logging
 
 from config.settings import settings
+from config.logging_config import setup_logging
 from app.api import auth_router, documents_router, analysis_router
+
+# Setup logging based on environment
+logger = setup_logging(settings.environment)
 
 # Create FastAPI application
 app = FastAPI(

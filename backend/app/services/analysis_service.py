@@ -2,11 +2,15 @@ import asyncio
 from datetime import datetime
 from typing import Optional
 from sqlalchemy.orm import Session
+import time
+import logging
 
 from app.models.user import User
 from app.models.document import Document
 from app.models.analysis import DocumentAnalysis, IPPStageProgress
 from app.services.llm_service import llm_service
+
+logger = logging.getLogger(__name__)
 
 class AnalysisService:
     
@@ -69,28 +73,58 @@ class AnalysisService:
                 return
             
             analysis.status = "processing"
+            analysis.progress_step = "initializing"
+            analysis.progress_message = "Starting document analysis..."
             db.commit()
             
+            # Add small delay to show initial progress
+            await asyncio.sleep(0.5)
+            
             # Step 1: Analyze resume
-            print(f"Analyzing resume for analysis {analysis_id}")
+            logger.info(f"Analyzing resume for analysis {analysis_id}")
+            analysis.progress_step = "analyzing_resume"
+            analysis.progress_message = "Analyzing your resume to extract skills, experience, and qualifications..."
+            db.commit()
+            
             resume_analysis = await llm_service.analyze_resume(resume_text)
             
             analysis.resume_analysis = resume_analysis
             db.commit()
             
+            # Small delay after resume analysis
+            await asyncio.sleep(0.3)
+            
             # Step 2: Analyze job description
-            print(f"Analyzing job description for analysis {analysis_id}")
+            logger.info(f"Analyzing job description for analysis {analysis_id}")
+            analysis.progress_step = "analyzing_job"
+            analysis.progress_message = "Analyzing the job description to understand requirements and expectations..."
+            db.commit()
+            
             job_analysis = await llm_service.analyze_job_description(job_text)
             
             analysis.job_analysis = job_analysis
             db.commit()
             
+            # Small delay after job analysis
+            await asyncio.sleep(0.3)
+            
             # Step 3: Find connections
-            print(f"Finding connections for analysis {analysis_id}")
+            logger.info(f"Finding connections for analysis {analysis_id}")
+            analysis.progress_step = "finding_connections"
+            analysis.progress_message = "Identifying connections between your background and the job requirements..."
+            db.commit()
+            
             connections = await llm_service.find_connections(resume_analysis, job_analysis)
             
+            # Small delay before evidence extraction
+            await asyncio.sleep(0.3)
+            
             # Step 3b: Extract detailed evidence with quotes
-            print(f"Extracting detailed evidence for analysis {analysis_id}")
+            logger.info(f"Extracting detailed evidence for analysis {analysis_id}")
+            analysis.progress_step = "extracting_evidence"
+            analysis.progress_message = "Extracting specific evidence and quotes from your documents..."
+            db.commit()
+            
             detailed_evidence = await llm_service.extract_detailed_evidence(resume_text, job_text)
             
             # Merge detailed evidence into connections if successful
@@ -100,17 +134,24 @@ class AnalysisService:
             analysis.connections_analysis = connections
             db.commit()
             
+            # Small delay before summary generation
+            await asyncio.sleep(0.3)
+            
             # Step 4: Generate context summary
-            print(f"Generating context summary for analysis {analysis_id}")
+            logger.info(f"Generating context summary for analysis {analysis_id}")
+            analysis.progress_step = "generating_summary"
+            analysis.progress_message = "Creating your personalized context summary and recommendations..."
+            db.commit()
+            
             summary_result = await llm_service.generate_context_summary(
                 resume_analysis, job_analysis, connections
             )
             
             # Log the result for debugging
-            print(f"Context summary result keys: {summary_result.keys()}")
-            print(f"Role fit narrative: {summary_result.get('role_fit_narrative', '')[:100]}...")
-            print(f"Strengths count: {len(summary_result.get('strengths', []))}")
-            print(f"Gaps count: {len(summary_result.get('gaps', []))}")
+            logger.debug(f"Context summary result keys: {summary_result.keys()}")
+            logger.debug(f"Role fit narrative: {summary_result.get('role_fit_narrative', '')[:100]}...")
+            logger.debug(f"Strengths count: {len(summary_result.get('strengths', []))}")
+            logger.debug(f"Gaps count: {len(summary_result.get('gaps', []))}")
             
             # Save all the structured fields
             analysis.context_summary = summary_result.get("context_summary", "")
@@ -119,6 +160,8 @@ class AnalysisService:
             analysis.gaps = summary_result.get("gaps", [])
             analysis.status = "completed"
             analysis.completed_at = datetime.utcnow()
+            analysis.progress_step = "completed"
+            analysis.progress_message = "Analysis complete!"
             db.commit()
             
             # Create IPP progress record
@@ -131,14 +174,16 @@ class AnalysisService:
             db.add(ipp_progress)
             db.commit()
             
-            print(f"Analysis {analysis_id} completed successfully")
+            logger.info(f"Analysis {analysis_id} completed successfully")
             
         except Exception as e:
-            print(f"Analysis {analysis_id} failed: {str(e)}")
+            logger.error(f"Analysis {analysis_id} failed: {str(e)}", exc_info=True)
             analysis = db.query(DocumentAnalysis).filter(DocumentAnalysis.id == analysis_id).first()
             if analysis:
                 analysis.status = "failed"
                 analysis.error_message = str(e)
+                analysis.progress_step = "failed"
+                analysis.progress_message = f"Analysis failed: {str(e)}"
                 db.commit()
         
         finally:
