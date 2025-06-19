@@ -217,13 +217,13 @@ const ContextStage: React.FC = () => {
     
     switch (analysis.status) {
       case 'pending':
-        return 'Analysis queued...';
+        return 'Analysis in Progress';
       case 'processing':
-        return 'Analyzing your documents...';
+        return 'Analysis in Progress';
       case 'completed':
-        return 'Analysis complete!';
+        return 'Analysis Complete';
       case 'failed':
-        return 'Analysis failed. Please try again.';
+        return 'Analysis Failed';
       default:
         return 'Unknown status';
     }
@@ -580,16 +580,7 @@ const ContextStage: React.FC = () => {
                 </button>
               </div>
             </div>
-          ) : hasRequiredDocuments() ? (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <div className="text-blue-800">
-                <h3 className="text-lg font-medium mb-2">Analysis in Progress</h3>
-                <p className="text-sm">
-                  Please wait while we analyze your documents to prepare for the next stage.
-                </p>
-              </div>
-            </div>
-          ) : (
+          ) : !hasRequiredDocuments() ? (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
               <div className="text-blue-800">
                 <h3 className="text-lg font-medium mb-2">Upload Required Documents</h3>
@@ -599,7 +590,7 @@ const ContextStage: React.FC = () => {
                 </p>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
