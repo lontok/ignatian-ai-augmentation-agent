@@ -5,6 +5,7 @@ import DocumentUpload from '../../components/documents/DocumentUpload';
 import ConnectionsDetailTable from '../../components/ConnectionsDetailTable';
 import AnalysisProgress from '../../components/AnalysisProgress';
 import { transformConnectionsData } from '../../utils/transformConnectionsData';
+import { SUPPORTED_FILE_FORMATS } from '../../constants/fileFormats';
 
 interface Document {
   id: number;
@@ -274,9 +275,9 @@ const ContextStage: React.FC = () => {
               <div className="text-left">
                 <h3 className="text-sm font-medium text-gray-900 mb-2">Before you begin:</h3>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Have your current resume ready (PDF, DOC, DOCX, or TXT format)</li>
-                  <li>• Save the job posting you're interested in as a PDF or text file</li>
-                  <li>• Both files should be under 10MB</li>
+                  <li>• Have your current resume ready ({SUPPORTED_FILE_FORMATS.display.full} format)</li>
+                  <li>• Save the job posting you're interested in as a {SUPPORTED_FILE_FORMATS.display.full} file</li>
+                  <li>• Both files should be under {SUPPORTED_FILE_FORMATS.maxSizeDisplay}</li>
                 </ul>
               </div>
             </div>
@@ -359,11 +360,16 @@ const ContextStage: React.FC = () => {
             </div>
             
             {!getExistingDocument('resume') ? (
-              <DocumentUpload
-                documentType="resume"
-                onUploadSuccess={handleUploadSuccess}
-                onUploadError={handleUploadError}
-              />
+              <>
+                <DocumentUpload
+                  documentType="resume"
+                  onUploadSuccess={handleUploadSuccess}
+                  onUploadError={handleUploadError}
+                />
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  Supported formats: {SUPPORTED_FILE_FORMATS.display.short}
+                </p>
+              </>
             ) : (
               <div className="text-center py-8">
                 <div className="text-green-600 mb-2">
@@ -425,11 +431,16 @@ const ContextStage: React.FC = () => {
             )}
 
             {!getExistingDocument('job_description') ? (
-              <DocumentUpload
-                documentType="job_description"
-                onUploadSuccess={handleUploadSuccess}
-                onUploadError={handleUploadError}
-              />
+              <>
+                <DocumentUpload
+                  documentType="job_description"
+                  onUploadSuccess={handleUploadSuccess}
+                  onUploadError={handleUploadError}
+                />
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  Supported formats: {SUPPORTED_FILE_FORMATS.display.short}
+                </p>
+              </>
             ) : (
               <div className="text-center py-8">
                 <div className="text-green-600 mb-2">

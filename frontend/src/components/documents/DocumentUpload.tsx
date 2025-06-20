@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { SUPPORTED_FILE_FORMATS, getFileValidationError } from '../../constants/fileFormats';
 
 interface DocumentUploadProps {
   documentType: 'resume' | 'job_description';
@@ -17,25 +18,8 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
   const [dragActive, setDragActive] = useState(false);
   const { token } = useAuth();
 
-  const allowedTypes = [
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'text/plain'
-  ];
-
   const validateFile = (file: File): string | null => {
-    // Check file size (10MB limit)
-    if (file.size > 10 * 1024 * 1024) {
-      return 'File size must be less than 10MB';
-    }
-
-    // Check file type
-    if (!allowedTypes.includes(file.type)) {
-      return 'Please upload a PDF, DOC, DOCX, or TXT file';
-    }
-
-    return null;
+    return getFileValidationError(file);
   };
 
   const handleFileSelect = (selectedFile: File) => {
@@ -123,7 +107,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
           Upload {getDocumentTypeLabel()}
         </h3>
         <p className="text-sm text-gray-600 mt-1">
-          Upload your {getDocumentTypeLabel().toLowerCase()} (PDF, DOC, DOCX, or TXT)
+          Upload your {getDocumentTypeLabel().toLowerCase()} ({SUPPORTED_FILE_FORMATS.display.full})
         </p>
       </div>
 
@@ -161,7 +145,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
               or drag and drop
             </div>
             <p className="text-xs text-gray-500">
-              PDF, DOC, DOCX, or TXT up to 10MB
+              {SUPPORTED_FILE_FORMATS.display.withSize}
             </p>
           </div>
         </div>
@@ -213,7 +197,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
       <input
         id={`file-input-${documentType}`}
         type="file"
-        accept=".pdf,.doc,.docx,.txt"
+        accept={SUPPORTED_FILE_FORMATS.accept}
         onChange={handleFileChange}
         className="hidden"
       />
