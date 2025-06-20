@@ -94,6 +94,10 @@ class LLMService:
                             "first exact quote from resume that shows this skill",
                             "second exact quote from resume that provides additional evidence (if available)"
                         ],
+                        "connection_explanations": [
+                            "brief explanation of why the first evidence demonstrates the requirement",
+                            "brief explanation of why the second evidence demonstrates the requirement (if applicable)"
+                        ],
                         "role_application": "how this applies to the role",
                         "confidence_score": 8,
                         "strength_level": "strong",
@@ -120,11 +124,14 @@ class LLMService:
         3. A requirement is a DIRECT MATCH only if you can find EXACT EVIDENCE in the resume
         4. If you cannot find direct evidence in the resume for a job requirement, it MUST go in skill_gaps, NOT direct_matches
         5. For direct_matches, the candidate_evidence field is now an ARRAY of 1-2 exact quotes from the resume
-        6. Try to find 2 different pieces of evidence from the resume for each requirement when possible
-        7. Each evidence quote should be from a different section/experience in the resume
-        8. Never put "— (no direct evidence)" in the direct_matches section - those belong in skill_gaps
-        9. Include at least 3-5 direct matches (with real evidence) and 2-4 gaps
-        10. Return ONLY the JSON object, no other text or formatting
+        6. For direct_matches, the connection_explanations field is an ARRAY that matches candidate_evidence
+        7. Each connection explanation should be 1-2 sentences explaining why that specific evidence demonstrates the requirement
+        8. If you have 2 pieces of evidence, you MUST have 2 connection explanations
+        9. Try to find 2 different pieces of evidence from the resume for each requirement when possible
+        10. Each evidence quote should be from a different section/experience in the resume
+        11. Never put "— (no direct evidence)" in the direct_matches section - those belong in skill_gaps
+        12. Include at least 3-5 direct matches (with real evidence) and 2-4 gaps
+        13. Return ONLY the JSON object, no other text or formatting
         """
         
         try:
