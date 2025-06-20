@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Development Workflow
+
+- **IMPORTANT**: Do NOT automatically commit and push changes
+- Wait for explicit user instruction before running `git commit` or `git push`
+- The user will tell you when they want to commit/push (e.g., "commit these changes" or "/user:push")
+
 ## Project Overview
 
 The Ignatian AI Augmentation Agent is a web application designed for LMU business students that converts job listings and student resumes into tailored portfolio project plans. The app embeds the Ignatian Pedagogical Paradigm (IPP) with its five elements: Context, Experience, Reflection, Action, and Evaluation.
