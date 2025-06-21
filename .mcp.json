@@ -11,6 +11,14 @@
         "PUPPETEER_LAUNCH_OPTIONS": "{\"headless\": false, \"args\": [\"--no-sandbox\", \"--disable-setuid-sandbox\"]}",
         "ALLOW_DANGEROUS": "true"
       }
+    },
+    "trello": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@delorenj/mcp-server-trello"
+      ]
     }
   }
 }
