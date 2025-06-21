@@ -11,22 +11,52 @@
 - Development branch: main
 - Documentation branch: docs-workspace
 - Last update: 2024-12-29
+- **Major Update**: PRD updated with two-path system (Exploration & Interview Prep modes)
 
 ## Current Development Tasks
 
-### High Priority Tasks
+### 🚨 High Priority - Path Selection & Multi-Upload Implementation
+- [ ] Implement Path Selection Screen ("Where are you in your job search?")
+- [ ] Update Context Stage for Clear Resume-Only Upload
+- [ ] Implement Multi-Upload in Experience Stage (3-5 job descriptions for Exploration Mode)
+- [ ] Implement Overlap Analysis Engine (common requirements extraction)
+- [ ] Create Venn Diagram Visualization (D3.js interactive job overlaps)
+
+### 🔧 High Priority - Core Testing (Existing)
 - [ ] Test Stage 2 EXPERIENCE - UX flow and LLM outputs (Trello Card #3)
+  - [ ] Test Exploration Mode (multi-upload)
+  - [ ] Test Interview Prep Mode (single upload)
 - [ ] Test Stage 3 REFLECTION - UX flow and LLM outputs
 - [ ] Test Stage 4 ACTION - UX flow and LLM outputs
+  - [ ] Test multi-target project generation
+  - [ ] Test coverage scoring display
 - [ ] Test Stage 5 EVALUATION - UX flow and LLM outputs
 
-### Medium Priority Tasks
-- [ ] Test error handling for invalid files
+### 📊 Medium Priority - Multi-Target Features
+- [ ] Implement Smart Project Generator (coverage optimization)
+- [ ] Create Coverage Dashboard (projects × jobs matrix)
+- [ ] Implement Strategic Recommendations Panel ("Power Technologies")
+
+### 🛡️ Medium Priority - Existing Testing
+- [ ] Test error handling for invalid files (including multi-file scenarios)
 - [ ] Test cross-stage navigation and data persistence
+- [ ] Test path switching scenarios
+
+### 🎨 Low Priority - UI Enhancements
+- [ ] Add Mode Indicator Badge (persistent path display)
+- [ ] Create Interview Countdown Timer (Interview Prep Mode)
+- [ ] Build Project Selection Interface (3-5 options with coverage scores)
+
+### 📝 Low Priority - Documentation & Analytics
+- [ ] Update API Documentation for Multi-Upload
+- [ ] Implement Path Analytics (selection rates, switching patterns)
+- [ ] Create User Guide for Both Paths
 
 ### Task Notes
-- Stage 1 CONTEXT testing is complete
-- Focus on ensuring smooth UX flow and appropriate LLM responses
+- **Major Architecture Change**: Context now ONLY handles resume upload
+- **Experience Stage Split**: Must support both single and multi-upload modes
+- **New Core Feature**: Overlap analysis and multi-target project generation
+- Focus on maintaining IPP integrity while adding practical flexibility
 - Document any issues found during testing
 - Update this list as tasks are completed or new tasks are identified
 
@@ -134,4 +164,50 @@
 Add a pre-upload questionnaire/wizard that captures personal context, making the Context stage truly about "understanding the whole person" as the IPP requires.
 
 ---
-*Last updated by: Development Claude on 2025-06-21*
+
+## 2024-12-29 PRD Update - Two-Path System
+
+### Changes Made
+**Major PRD Update**: Added two distinct user paths to support different job search scenarios
+
+**Files Modified**: 
+- docs/product/prd.md (comprehensive update)
+- docs/product/ipp-guide.md (clarified upload flow)
+- CLAUDE.local.md (created for local development context)
+
+**Key Changes**:
+1. **Path Selection**: 
+   - Exploration Mode: Upload 3-5 job descriptions, create multi-target project
+   - Interview Prep Mode: Upload 1 job description, create focused project
+
+2. **Flow Clarification**:
+   - Context = Resume upload only (understanding who you are)
+   - Experience = Job description upload(s) (exploring opportunities)
+
+3. **Multi-Target Project Approach**:
+   - Smart overlap analysis across multiple jobs
+   - Coverage scoring (e.g., "This project addresses 85% of Role A")
+   - Venn diagram visualization
+   - Strategic value proposition for interviews
+
+4. **Technical Requirements**:
+   - Multi-file upload interface needed
+   - Overlap analysis algorithm implementation
+   - Coverage scoring system
+   - D3.js visualizations
+
+**Documentation Needed**: 
+- API specs for multi-upload endpoints
+- User guides for each path
+- Technical documentation for overlap analysis
+
+**Testing Required**: 
+- Path selection flow
+- Multi-upload functionality
+- Overlap analysis accuracy
+- Coverage scoring validation
+
+**Status**: PRD complete, ready for implementation
+
+---
+*Last updated by: Development Claude on 2024-12-29*
