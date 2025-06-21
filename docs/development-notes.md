@@ -15,6 +15,17 @@
 
 ## Current Development Tasks
 
+### 🚨 High Priority - Context Stage Enhancement
+- [ ] Align Context Stage extraction with Ignatian pedagogical goals
+  - [ ] Review current extraction fields vs PRD requirements
+  - [ ] Ensure values/character analysis is properly captured
+  - [ ] Verify service orientation extraction from experiences
+  - [ ] Test growth indicators and transferable skills identification
+- [ ] Optimize Context Stage user experience
+  - [ ] Streamline verification UI for extracted data
+  - [ ] Balance comprehensive extraction with user-friendly presentation
+  - [ ] Ensure clear separation: Context (resume) vs Experience (job descriptions)
+
 ### 🚨 High Priority - Path Selection & Multi-Upload Implementation
 - [ ] Implement Path Selection Screen ("Where are you in your job search?")
 - [ ] Update Context Stage for Clear Resume-Only Upload
@@ -210,4 +221,19 @@ Add a pre-upload questionnaire/wizard that captures personal context, making the
 **Status**: PRD complete, ready for implementation
 
 ---
-*Last updated by: Development Claude on 2024-12-29*
+## 2025-01-21 Development Update - Context Stage Analysis
+**Changes Made**: Analyzed gap between PRD Context stage specifications and actual implementation
+**Files Modified**: docs/development-notes.md
+**Key Findings**: 
+- PRD specifies basic extraction (6 categories)
+- Implementation includes comprehensive Ignatian analysis (11 categories)
+- Enhanced extraction includes service orientation, growth indicators, character strengths
+- Implementation aligns better with Ignatian pedagogy than original PRD specs
+**Documentation Needed**: 
+- Update PRD to reflect enhanced Context extraction approach
+- Document rationale for expanded extraction fields
+**Testing**: Need to verify all extraction fields work correctly
+**Status**: Analysis complete, development tasks updated
+
+---
+*Last updated by: Development Claude on 2025-01-21*
