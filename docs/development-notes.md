@@ -12,6 +12,24 @@
 - Documentation branch: docs-workspace
 - Last update: 2024-12-29
 
+## Current Development Tasks
+
+### High Priority Tasks
+- [ ] Test Stage 2 EXPERIENCE - UX flow and LLM outputs
+- [ ] Test Stage 3 REFLECTION - UX flow and LLM outputs
+- [ ] Test Stage 4 ACTION - UX flow and LLM outputs
+- [ ] Test Stage 5 EVALUATION - UX flow and LLM outputs
+
+### Medium Priority Tasks
+- [ ] Test error handling for invalid files
+- [ ] Test cross-stage navigation and data persistence
+
+### Task Notes
+- Stage 1 CONTEXT testing is complete
+- Focus on ensuring smooth UX flow and appropriate LLM responses
+- Document any issues found during testing
+- Update this list as tasks are completed or new tasks are identified
+
 ## Pending Documentation Updates
 - [ ] Initial setup complete - ready for first development task
 
@@ -39,6 +57,13 @@
 **Documentation Needed**: None - initialization only
 **Testing**: N/A - no code changes
 **Status**: Ready to receive development tasks
+
+## 2024-12-29 Development Update (2)
+**Changes Made**: Added current development tasks tracking section
+**Files Modified**: docs/development-notes.md
+**Documentation Needed**: None - internal tracking update
+**Testing**: N/A - documentation change only
+**Status**: Task list synchronized with todo system
 
 ---
 *Last updated by: Development Claude on 2024-12-29*
