@@ -15,7 +15,7 @@
 ## Current Development Tasks
 
 ### High Priority Tasks
-- [ ] Test Stage 2 EXPERIENCE - UX flow and LLM outputs
+- [ ] Test Stage 2 EXPERIENCE - UX flow and LLM outputs (Trello Card #3)
 - [ ] Test Stage 3 REFLECTION - UX flow and LLM outputs
 - [ ] Test Stage 4 ACTION - UX flow and LLM outputs
 - [ ] Test Stage 5 EVALUATION - UX flow and LLM outputs
@@ -65,5 +65,73 @@
 **Testing**: N/A - documentation change only
 **Status**: Task list synchronized with todo system
 
+## 2024-12-29 Development Update (3)
+**Changes Made**: Created Trello card for Stage 2 testing task
+**Files Modified**: docs/development-notes.md
+**Documentation Needed**: None - task tracking update
+**Testing**: N/A - project management activity
+**Status**: Trello Card #3 created in Backlog for Stage 2 Experience testing
+
+## 2025-06-21 Context Stage Gap Analysis
+
+### Current Implementation vs Requirements
+
+**What's Currently Built:**
+1. ✅ Document upload (resume + job description)
+2. ✅ LLM analysis pipeline (5-step process)
+3. ✅ Progress tracking during analysis
+4. ✅ Strengths/gaps identification
+5. ✅ Detailed evidence table with connections
+6. ✅ Role-fit narrative generation
+
+**Critical Gaps from IPP Guide Requirements:**
+
+1. **Personal Background Collection** (IPP Guide Phase 1)
+   - ❌ No intake questionnaire for personal context
+   - ❌ No family expectations/cultural values capture
+   - ❌ No financial situation assessment
+   - ❌ No geographic preferences collection
+   - ❌ No personal relationships/commitments info
+   - ❌ No health/life circumstances consideration
+
+2. **Academic Profile** (IPP Guide Phase 1)
+   - ❌ No major/minor/year collection
+   - ❌ No GPA/achievements tracking
+   - ❌ No coursework inventory
+   - ❌ No extracurricular activities capture
+
+3. **Professional Starting Point** (IPP Guide Phase 1)
+   - ⚠️ Partial - resume parsing exists but no structured capture of:
+     - Career assumptions/biases
+     - Professional network info
+     - Industry knowledge level
+
+4. **Personal Story & Values** (IPP Guide emphasis)
+   - ❌ No personal story prompts
+   - ❌ No values inventory
+   - ❌ No motivation/mission capture
+   - ❌ No "Who is this person?" exploration
+
+5. **Skills Inventory** (PRD requirement)
+   - ⚠️ Partial - extracted from resume but no:
+     - Self-assessment of skill levels
+     - Skills categorization (technical/soft/transferable)
+     - Skills the student wants to develop
+
+**Critical Missing Features:**
+- **Comprehensive intake questionnaire** before document upload
+- **Personal story prompts** to understand the whole person
+- **Background assessment tools** for context
+- **Skills self-assessment** beyond resume extraction
+
+**Impact of Gaps:**
+- LLM lacks personal context for meaningful personalization
+- Cannot tailor advice to student's life circumstances
+- Missing values/motivations that should inform project suggestions
+- No baseline for measuring growth through IPP journey
+
+**Recommendation:**
+Add a pre-upload questionnaire/wizard that captures personal context, making the Context stage truly about "understanding the whole person" as the IPP requires.
+
 ---
-*Last updated by: Development Claude on 2024-12-29*
+*Last updated by: Development Claude on 2025-06-21*

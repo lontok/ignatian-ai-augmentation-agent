@@ -42,9 +42,10 @@ Context means being aware of the actual environment within which learning takes 
 
 ### Implementation Features
 - **Comprehensive intake questionnaire**
-- **Resume upload and parsing**
+- **Resume upload and parsing** (student's background)
 - **Personal story prompts**
 - **Background assessment tools**
+- **Skills inventory builder**
 
 ### Key Question
 "Who is this person, and what is their starting point?"
@@ -55,45 +56,65 @@ Context means being aware of the actual environment within which learning takes 
 *Active Encounter with Career Realities*
 
 ### Definition
-Experience means any activity in which learners perceive, understand, and feel the reality studied - engaging mind, heart, and will.
+Experience means any activity in which learners perceive, understand, and feel the reality studied - engaging mind, heart, and will. **This is where students upload job descriptions to explore actual opportunities.**
 
 ### Key Components for the App
-1. **Direct Experiences**
+1. **Job Description Upload & Analysis** (Primary Activity)
+   - Students search for interesting positions
+   - **Upload job descriptions to the app**
+   - App parses and extracts:
+     - Essential responsibilities
+     - Required technologies/tools
+     - Typical daily tasks
+     - Company culture indicators
+     - Project opportunities
+
+2. **Direct Experiences**
    - Informational interviews with professionals
    - Job shadowing opportunities
    - Industry events and networking
    - Company visits or virtual tours
    - Hackathons or project challenges
 
-2. **Mediated Experiences**
-   - **Analyzing real job descriptions** (critical for portfolio projects)
-     - Parsing essential responsibilities
-     - Identifying required technologies
-     - Understanding typical daily tasks
-     - Extracting project opportunities
+3. **Mediated Experiences**
    - Reading employee testimonials
    - Watching "day in the life" videos
-   - Exploring company cultures and values
+   - Exploring company websites and values
    - Reviewing industry publications
    - Studying salary data and career trajectories
 
 ### Implementation Features
-- **Job description parser** that extracts:
+- **Job Description Upload Interface**
+  - Easy upload for multiple job postings
+  - URL import from job boards
+  - PDF/text file support
+- **Advanced Job Parser** that extracts:
   - Key responsibilities
   - Required technologies/tools
   - Typical project types
   - Skills demonstrations needed
+  - Company challenges to solve
+- **Opportunity Dashboard** showing parsed jobs
 - **Company research portal**
-- **Informational interview scheduling**
+- **Informational interview scheduler**
 - **Industry content curation**
-- **Virtual experience library**
 
 ### Key Question
-"What is the reality of this career field?"
+"What opportunities exist, and what do these roles actually require?"
+
+### User Actions in This Phase
+1. Search for interesting job postings
+2. **Upload job descriptions to the app**
+3. Review parsed requirements and responsibilities
+4. Conduct informational interviews
+5. Research companies and culture
+6. Explore industry trends
 
 ### Escape Hatch
-After initial experiences, check: "Are you feeling drawn to explore this further?" 
-Allow pivoting to different opportunities without shame.
+After uploading and reviewing job descriptions: "Are you feeling drawn to explore this opportunity further?" 
+- If yes → Continue to more experiences or move to Reflection
+- If no → Upload different job descriptions that might be better aligned
+- Always frame pivoting as positive discernment and learning
 
 ---
 
@@ -104,11 +125,12 @@ Allow pivoting to different opportunities without shame.
 Reflection is thoughtful reconsideration of experience to grasp its significance more fully - involving memory, understanding, imagination, and feelings.
 
 ### Key Components for the App
-1. **Processing Encounters**
-   - Emotional responses to job descriptions
+1. **Processing Job Description Encounters**
+   - Emotional responses to uploaded job descriptions
    - Which responsibilities energized vs. drained
    - Technologies that sparked curiosity
    - Company missions that resonated
+   - Tasks that felt authentic vs. forced
 
 2. **Project Opportunity Recognition**
    - "Which job tasks would I enjoy demonstrating?"
@@ -164,7 +186,8 @@ Action includes both internal human growth and its external manifestation - wher
    - Challenging limiting beliefs
 
 2. **Portfolio Project Creation** (Primary External Action)
-   - **Project Scoping Based on Job Descriptions**
+   - **Project Scoping Based on Uploaded Job Descriptions**
+     - Use parsed data from Experience phase
      - Transform role responsibilities into project ideas
      - Use exact technologies from job postings
      - Address real company challenges
@@ -190,11 +213,11 @@ Action includes both internal human growth and its external manifestation - wher
 
 ### Implementation Features
 - **AI-Powered Project Generator**
-  - Analyzes job descriptions from Experience phase
+  - Analyzes job descriptions uploaded during Experience phase
   - Suggests 3-5 project ideas based on:
-    - Extracted responsibilities
-    - Required technologies
-    - Company challenges
+    - Parsed responsibilities from uploaded jobs
+    - Required technologies extracted from postings
+    - Company challenges identified
     - Student's values (from Reflection)
 - **Project Planning Templates**
 - **Technical guidance for each technology**
@@ -275,33 +298,38 @@ Make evaluation celebratory, not just critical. Even "failed" applications teach
 
 ## Critical Design Principles
 
-### 1. **Portfolio-Centric Process**
+### 1. **Clear Upload Distinction**
+- **Context Phase**: Students upload their RESUME (understanding who they are)
+- **Experience Phase**: Students upload JOB DESCRIPTIONS (exploring opportunities)
+- This separation maintains pedagogical integrity
+
+### 2. **Portfolio-Centric Process**
 - Every phase builds toward creating compelling portfolio projects
 - Job descriptions are mined for specific project opportunities
 - Projects demonstrate exact skills employers seek
 - Values integration makes projects unique and memorable
 
-### 2. **Cyclical, Not Linear**
+### 3. **Cyclical, Not Linear**
 - Users can return to any phase based on discoveries
 - Each cycle deepens understanding
 - No "failure," only learning
 
-### 3. **Whole Person Focus**
+### 4. **Whole Person Focus**
 - Address cognitive, affective, and spiritual dimensions
 - Value human development alongside professional progress
 - Form competent, conscious, and compassionate professionals
 
-### 4. **Freedom and Flexibility**
+### 5. **Freedom and Flexibility**
 - Multiple exit points honor discernment
 - Pivoting is reframed as clarity
 - "No" is as valuable as "yes"
 
-### 5. **Service Orientation**
+### 6. **Service Orientation**
 - Every phase considers impact on others
 - Develops "men and women for others"
 - Career as vocation, not just employment
 
-### 6. **Accompaniment Model**
+### 7. **Accompaniment Model**
 - App facilitates but doesn't dictate
 - Respects individual journey
 - Provides structure with flexibility
@@ -311,11 +339,11 @@ Make evaluation celebratory, not just critical. Even "failed" applications teach
 ## Technical Implementation Notes
 
 ### Data Flow
-1. **Context** → Builds user profile and skills inventory
-2. **Experience** → Parses job descriptions for responsibilities/technologies
-3. **Reflection** → Identifies aligned responsibilities to demonstrate
-4. **Action** → Generates and guides portfolio project creation
-5. **Evaluation** → Measures project impact on job placement
+1. **Context** → Resume upload → builds user profile and skills inventory
+2. **Experience** → Job description upload → parses requirements and technologies
+3. **Reflection** → Analysis of feelings → identifies aligned responsibilities to demonstrate
+4. **Action** → Project generation → creates portfolio based on parsed job data
+5. **Evaluation** → Results tracking → measures project impact on job placement
 
 ### Key Features Needed
 - Robust intake system with skills assessment
@@ -371,11 +399,11 @@ Make evaluation celebratory, not just critical. Even "failed" applications teach
 
 ### How Each Phase Builds Toward Portfolio Creation:
 
-1. **Context** → Understand student's existing skills and values foundation
-2. **Experience** → Parse job descriptions to extract project requirements
-3. **Reflection** → Identify which responsibilities align with values
-4. **Action** → Create portfolio project using exact technologies from job posting
-5. **Evaluation** → Measure project's impact on job placement success
+1. **Context** → Student uploads resume; app understands their existing skills and background
+2. **Experience** → Student uploads job descriptions; app parses requirements and technologies
+3. **Reflection** → Student identifies which responsibilities align with their values and interests
+4. **Action** → App generates portfolio project ideas using exact technologies from uploaded job descriptions
+5. **Evaluation** → Measure project's impact on interview success and job placement
 
 ### Why Portfolio Projects Work:
 - Transform abstract skills into tangible demonstrations

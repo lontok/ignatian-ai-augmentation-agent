@@ -2,16 +2,20 @@
 
 ### TL;DR
 
-The Ignatian AI Augmentation Agent is a web app for students
-that converts job listings and student resumes into tailored
-portfolio project plans. By embedding the Ignatian Pedagogical Paradigm
-(IPP) and its five elements—context, experience, reflection, action, and
-evaluation—the app helps students showcase skills, connect their values,
-and confidently prepare for job interviews. The current MVP implementation uses a single,
-efficient LLM (OpenAI GPT-4o-mini) across all stages, with plans for future multi-LLM 
-specialization. Authentication is streamlined via Google sign-in (any Google email) for 
-fast, secure onboarding. The outcome: increased student job readiness, stronger interview 
-results, and deeper personal growth.
+The Ignatian AI Augmentation Agent is a web app for students that converts
+their resumes and job listings into tailored portfolio project plans. The app
+offers two distinct paths: **Exploration Mode** for students researching
+opportunities (upload 3-5 job descriptions to create one multi-purpose project)
+and **Interview Prep Mode** for students with secured interviews (focused
+single-job project). By embedding the Ignatian Pedagogical Paradigm (IPP)—where
+Context means uploading your RESUME and Experience means uploading JOB
+DESCRIPTIONS—the app helps students create **portfolio projects** that
+demonstrate exact skills employers seek while reflecting personal values. The
+Multi-Target approach in Exploration Mode analyzes overlapping requirements to
+generate strategic projects that address multiple roles simultaneously. Current
+MVP uses OpenAI GPT-4o-mini across all stages. Authentication via Google
+sign-in. The outcome: compelling portfolio projects that lead to meaningful
+employment.
 
 ------------------------------------------------------------------------
 
@@ -31,14 +35,26 @@ handling all IPP stages. This simplified approach has proven effective for the M
 
 ### Future Enhancement: Multi-LLM Architecture
 
-### Overview
+### Overview: Portfolio-Centric Journey
 
-The application employs a specialized multi-LLM approach where each stage of the IPP journey is powered by an LLM optimized for that specific task. This design provides:
+The application guides students through the Ignatian Pedagogical Paradigm with one clear outcome: **creating portfolio projects that demonstrate job-relevant skills**. Every stage builds toward this goal:
 
-- **Specialized Performance**: Each LLM is configured with stage-specific system prompts and capabilities
-- **Cost Optimization**: Use of appropriate models for each task (cheaper models for simple parsing, premium models for complex reasoning)
-- **Quality Enhancement**: Stage-specific optimization improves accuracy and relevance
-- **Scalability**: Easy to swap or upgrade individual LLMs without affecting other stages
+- **Context**: Students upload their RESUME to establish foundation and skills inventory
+- **Experience**: Students upload JOB DESCRIPTIONS (1-5) to explore opportunities
+- **Reflection**: Connects technical requirements with personal values
+- **Action**: Generates portfolio project(s) - multi-target or focused
+- **Evaluation**: Measures project impact on job placement success
+
+The app adapts to where students are in their journey, offering strategic multi-target projects for exploration or focused projects for specific interviews.
+
+### Technical Architecture (Future Multi-LLM Vision)
+
+While currently using a single LLM effectively, the future architecture envisions specialized models for each IPP stage:
+
+- **Specialized Performance**: Each LLM configured for stage-specific tasks
+- **Cost Optimization**: Appropriate models for each task complexity
+- **Quality Enhancement**: Stage-specific optimization improves accuracy
+- **Scalability**: Easy to swap or upgrade individual LLMs independently
 
 ### LLM Stage Specialization
 
@@ -141,37 +157,140 @@ reflection_llm = IPPStageLLM("reflection", claude_config, reflection_system_prom
 
 ------------------------------------------------------------------------
 
+## User Journey Paths
+
+### Initial Path Selection
+
+Upon signing in, students are presented with a clear choice:
+
+**"Where are you in your job search journey?"**
+
+1. **"I'm exploring opportunities"** → Exploration Mode
+2. **"I have an interview scheduled"** → Interview Prep Mode
+
+This initial selection determines the user's path through the IPP journey, optimizing for their specific needs while maintaining pedagogical integrity.
+
+### Path A: Exploration Mode
+
+**For:** Students researching career opportunities without committed interviews
+
+**Key Features:**
+- **Multiple Job Upload**: Upload 3-5 job descriptions in Experience phase
+- **Smart Overlap Analysis**: AI identifies common requirements across all uploaded jobs
+- **Multi-Target Project**: Creates ONE strategic portfolio project addressing multiple roles
+- **Full IPP Journey**: Complete 5-phase experience with deep reflection
+- **Flexible Timeline**: Self-paced exploration without deadline pressure
+
+**Value Proposition:**
+- Efficiency: One project serves multiple job applications
+- Strategic thinking: Shows employers broad industry understanding
+- Flexibility: Project can be adapted for specific interviews later
+- Discovery: Helps identify which roles truly resonate
+
+**Coverage Scoring:**
+The AI provides coverage analysis:
+- "This project addresses 85% of Frontend Developer requirements"
+- "This project addresses 75% of Full-Stack Engineer requirements"
+- "This project addresses 70% of Backend Developer requirements"
+
+### Path B: Interview Prep Mode
+
+**For:** Students with secured interviews needing focused preparation
+
+**Key Features:**
+- **Single Job Focus**: Upload one specific job description
+- **Accelerated Timeline**: Compressed IPP journey aligned with interview date
+- **Targeted Project**: Highly specific portfolio piece for the exact role
+- **Interview Integration**: Project designed for presentation in scheduled interview
+- **Time-Bound**: Clear deadlines based on interview date
+
+**Value Proposition:**
+- Precision: Project perfectly matched to specific role
+- Speed: Rapid development for interview readiness
+- Focus: Deep preparation for one opportunity
+- Confidence: Walk into interview with tangible proof
+
+### Multi-Target Project Approach (Exploration Mode)
+
+**How It Works:**
+1. **Upload Phase**: Students upload 3-5 job descriptions they find interesting
+2. **Analysis Phase**: AI performs sophisticated overlap analysis:
+   - Extracts all technical requirements
+   - Identifies common technologies across roles
+   - Finds shared responsibilities and skills
+   - Maps overlapping competencies
+3. **Visualization**: Venn diagram shows skill/tech overlaps
+4. **Project Generation**: AI creates project ideas that maximize coverage:
+   - Uses most common technologies
+   - Demonstrates widely applicable skills
+   - Solves problems relevant to multiple roles
+   - Incorporates student's values across all applications
+
+**Example Multi-Target Project:**
+For a student who uploads Frontend Developer, Full-Stack Engineer, and UI/UX Engineer positions:
+- **Generated Project**: "Accessible Task Management Platform"
+- **Technologies**: React (all 3 roles), Node.js (2 roles), PostgreSQL (2 roles)
+- **Features**: Responsive design (Frontend), API development (Full-Stack), User research (UI/UX)
+- **Coverage**: 80-90% of requirements across all three positions
+
+### Smart Project Generation Features
+
+**Overlap Intelligence:**
+- Identifies "power technologies" appearing in multiple job descriptions
+- Finds "universal skills" valued across different roles
+- Discovers "transferable problems" relevant to multiple positions
+
+**Strategic Recommendations:**
+- "Focus on React and Node.js - they appear in 4 of your 5 uploaded jobs"
+- "Data visualization is a common thread - make it a project centerpiece"
+- "All roles mention collaboration - include team features in your project"
+
+**Interview Talking Points:**
+Students can tell employers: "I analyzed multiple roles in this field and built a project demonstrating the core competencies needed across the industry. This shows my strategic thinking and broad understanding of the field, not just narrow technical skills."
+
+### Path Switching and Flexibility
+
+**Exploration to Interview:**
+- Students can transition from Exploration to Interview Prep when they secure an interview
+- Existing multi-target project can be refined for specific role
+- Additional targeted features can be added quickly
+
+**Multiple Cycles:**
+- Complete Exploration Mode for initial project
+- Use Interview Prep Mode for each specific opportunity
+- Build a portfolio of projects over time
+
+------------------------------------------------------------------------
+
 ## Goals
 
 ### Business Goals
 
-- Increase career placement rates among students.
+- **Primary Goal**: Increase career placement rates through portfolio project creation that demonstrates exact skills employers seek.
 
-- Deepen student engagement with Ignatian values throughout the job
-  preparation process.
+- **Portfolio Success**: Enable students to create compelling, values-driven portfolio projects that differentiate them from other candidates.
 
-- Streamline students' ability to create value-driven portfolio projects
-  aligned with employer needs.
+- **Pedagogical Impact**: Deepen student engagement with Ignatian values throughout the portfolio development process.
 
-- Capture data for continuous program assessment and research.
+- **Measurable Outcomes**: Capture data on portfolio project effectiveness in securing interviews and offers.
 
-- Establish a scalable foundation for broader educational use.
+- **Institutional Scale**: Establish a foundation for broader educational use of portfolio-based career preparation.
+
+- **Holistic Formation**: Form competent, conscious, and compassionate professionals through project-based learning.
 
 ### User Goals
 
-- Make it easier to convert job listings and resumes into stand-out
-  portfolio projects.
+- **Create Portfolio Projects**: Convert job listings and personal experience into stand-out portfolio projects that prove capability.
 
-- Help students articulate and integrate their skills, personal values,
-  and Ignatian habits in interviews.
+- **Values Integration**: Articulate and integrate personal values and Ignatian principles into concrete project work.
 
-- Boost student confidence by providing clear, actionable project
-  blueprints.
+- **Build Confidence**: Gain confidence through clear, actionable project blueprints and completed portfolio pieces.
 
-- Provide meaningful reflection opportunities throughout the career
-  preparation journey.
+- **Meaningful Reflection**: Experience deep reflection that connects career aspirations with personal mission.
 
-- Offer practical evidence of fit to potential employers.
+- **Demonstrate Fit**: Present tangible evidence of skills and values alignment to potential employers.
+
+- **Career Discernment**: Use escape hatches at each stage to ensure authentic career choices.
 
 ### Non-Goals
 
@@ -179,39 +298,95 @@ reflection_llm = IPPStageLLM("reflection", claude_config, reflection_system_prom
 
 - Does not try to replace career counselors or professional coaching.
 
-- Does not automatically match students with employers, beyond
-  generating project artifacts.
+- Does not guarantee job placement, but significantly improves chances through portfolio demonstration.
+
+------------------------------------------------------------------------
+
+## Critical Design Principles (from IPP Guide)
+
+### 1. **Portfolio-Centric Process**
+- Every phase builds toward creating compelling portfolio projects
+- Job descriptions are mined for specific project opportunities
+- Projects demonstrate exact skills employers seek
+- Values integration makes projects unique and memorable
+
+### 2. **Cyclical, Not Linear**
+- Users can return to any phase based on discoveries
+- Each cycle deepens understanding
+- No "failure," only learning
+- Navigation allows revisiting previous stages
+
+### 3. **Whole Person Focus**
+- Address cognitive, affective, and spiritual dimensions
+- Value human development alongside professional progress
+- Form competent, conscious, and compassionate professionals
+
+### 4. **Freedom and Flexibility**
+- Multiple escape hatches honor discernment
+- Pivoting is reframed as clarity
+- "No" is as valuable as "yes"
+
+### 5. **Service Orientation**
+- Every phase considers impact on others
+- Develops "men and women for others"
+- Career as vocation, not just employment
+
+### 6. **Accompaniment Model**
+- App facilitates but doesn't dictate
+- Respects individual journey
+- Provides structure with flexibility
 
 ------------------------------------------------------------------------
 
 ## User Stories
 
-**Persona 1: Business Student (Career Seeker)**
+**Persona 1: Exploring Student (Exploration Mode)**
 
-- As a business student, I want to upload a job listing and my resume so
-  that the app can help me create a focused project plan that aligns
-  with employer requirements.
+- As an exploring student, I want to upload 3-5 job descriptions that interest me
+  so the app can identify common requirements and suggest one strategic project.
 
-- As a business student, I want LLM-powered reflection guides during my
-  project so I can connect my values and Ignatian practices to my work
-  in ways that are highly relevant to the job and industry.
+- As an exploring student, I want to see a Venn diagram of overlapping skills
+  so I can understand which technologies and competencies are most valuable.
 
-- As a business student, I want to generate a portfolio artifact I can
-  confidently discuss in interviews, so I clearly demonstrate my fit for
-  a role.
+- As an exploring student, I want coverage scores showing how one project
+  addresses multiple roles, so I can maximize my job search efficiency.
 
-**Persona 2: Faculty Mentor**
+**Persona 2: Interview-Ready Student (Interview Prep Mode)**
 
-- As a faculty mentor, I want to review student project plans, so I can
-  support their professional growth while tracking Ignatian integration.
+- As a student with an interview, I want to upload one specific job description
+  so the app can create a focused project for that exact role.
 
-- As a mentor, I want to view aggregated outcomes to assess the
-  program's impact.
+- As a student with an interview, I want an accelerated timeline aligned
+  with my interview date, so I'm prepared with a relevant portfolio piece.
 
-**Persona 3: Researcher**
+- As a student with an interview, I want precise talking points about my
+  project that directly address the job requirements.
 
-- As a researcher, I want access to anonymized student usage and outcome
-  data, so I can measure the app's holistic impact.
+**Persona 3: Strategic Student (Using Both Modes)**
+
+- As a strategic student, I want to start in Exploration Mode to understand
+  the field, then switch to Interview Prep when I get specific interviews.
+
+- As a strategic student, I want my multi-target project to be adaptable,
+  so I can add role-specific features when preparing for particular interviews.
+
+**Persona 4: Traditional Student (Single Path)**
+
+- As a traditional student, I still want to upload just one job listing
+  and create one focused project, maintaining the original app experience.
+
+**Persona 5: Faculty Mentor**
+
+- As a faculty mentor, I want to see which path students choose and their
+  success rates, so I can guide future students effectively.
+
+- As a mentor, I want to understand how multi-target projects perform
+  versus focused projects in securing employment.
+
+**Persona 6: Researcher**
+
+- As a researcher, I want data on path selection patterns and outcomes,
+  so I can study the effectiveness of strategic versus focused approaches.
 
 ------------------------------------------------------------------------
 
@@ -225,42 +400,106 @@ The app's entire user journey mirrors the five-stage Ignatian
 Pedagogical Paradigm. Each stage is distinctive and powered by
 LLM-driven personalization:
 
-1.  **Context**
+1.  **Context (Resume Upload - Understanding Who You Are)**
+
+    **Pedagogical Purpose**: The Context phase is about understanding the whole person - their background, skills, experiences, and values. This is why students upload their RESUME here, not job descriptions.
 
     **Current Implementation:**
-    - Student signs in with Google to begin
-    - Uploads job description and resume via drag-and-drop interface
-    - LLM parses both documents through a 5-step analysis pipeline:
-      - Resume analysis (skills, experience, education)
-      - Job description analysis (requirements, responsibilities)
-      - Connection finding (skill matches, growth opportunities)
-      - Evidence extraction (up to 2 quotes per requirement)
-      - Context summary generation
-    - Real-time progress tracking with visual indicators
-    - Generates comprehensive analysis with strengths, gaps, and fit narrative
+    - Student signs in with Google and selects their path (Exploration or Interview Prep)
+    - **Uploads RESUME ONLY** via drag-and-drop interface
+    - LLM extracts comprehensive personal context from resume:
+      - Personal information (name, location, contact)
+      - Education details (school, major, graduation date, GPA)
+      - Work experience and internships
+      - Skills inventory (technical and soft skills)
+      - Extracurricular activities and leadership roles
+      - Inferred values and interests based on experiences
+    - Presents extracted data for quick verification
+    - Asks 2-3 minimal supplemental questions:
+      - Location preference (if different from resume)
+      - Top 2 career priorities (from quick selection list)
+      - Year in school (if unclear from graduation date)
+    - **NO job descriptions uploaded in this phase** - that comes in Experience
+    
+    **Key Point**: Context is about the STUDENT, not the jobs. We establish who they are before exploring what opportunities exist.
+    
+    **Escape Hatch**: After initial context gathering: "Ready to explore opportunities?" or "Want to add more context about yourself?"
 
     **Future Enhancements:**
-    - User background profile collection (major, interests, motivations)
-    - External company/industry research integration
-    - Vision AI for advanced document parsing
+    - Progressive context capture throughout journey
+    - Skills self-assessment tools
+    - Values inventory questionnaire
+    - Optional deeper profiling for power users
 
-2.  **Experience**
+2.  **Experience (Job Description Upload - Exploring Opportunities)**
 
-    **Current Implementation:**
-    - Interactive display of analysis results with categorized insights
+    **Pedagogical Purpose**: The Experience phase is about encountering the reality of career opportunities. This is where students upload JOB DESCRIPTIONS to explore what's actually out there.
+
+    **Current Implementation - Two Modes:**
+    
+    **A. Exploration Mode (3-5 Job Descriptions):**
+    - **Multi-Upload Interface**: 
+      - "Upload 3-5 job descriptions that interest you"
+      - Drag-and-drop for multiple files
+      - URL import from job boards (Indeed, LinkedIn, etc.)
+      - Support for PDF, TXT, and web scraping
+    - **Smart Overlap Analysis**:
+      - Extracts requirements from ALL uploaded jobs
+      - Identifies common technologies across positions
+      - Finds shared responsibilities and skills
+      - Creates overlap visualization (Venn diagram)
+    - **Coverage Dashboard**:
+      - Shows which skills appear in multiple jobs
+      - Highlights "power technologies" worth learning
+      - Identifies universal competencies
+      - Suggests strategic focus areas
+    
+    **B. Interview Prep Mode (1 Job Description):**
+    - **Single Upload Focus**: 
+      - "Upload the job description for your interview"
+      - Deep analysis of one specific role
+      - Detailed requirement extraction
+      - Company-specific insights
+    - **Targeted Analysis**:
+      - Precise skill matching with resume
+      - Specific technology requirements
+      - Exact responsibilities to demonstrate
+      - Company culture and values extraction
+    
+    **Common Features (Both Modes):**
+    - **Job Description Parser** extracts:
+      - Essential responsibilities
+      - Required technologies and tools
+      - Typical daily tasks and projects
+      - Problem-solving scenarios
+      - Company challenges to address
+    - Interactive display of analysis results
     - Visual presentation of skill matches and gaps
-    - "Detailed Skills Evidence" table showing:
-      - Job requirements matched with resume evidence
-      - "Why This Connects" explanations for each match
-      - Multiple evidence points (up to 2) per requirement
-    - Checkbox selection for meaningful experiences
-    - Text areas for elaborating on personal significance
-    - Mitigation strategies for identified skill gaps
+    - "Detailed Skills Evidence" table
+    - Experience selection and elaboration tools
+    
+    **Unique to Multi-Upload (Exploration):**
+    - **Overlap Intelligence Report**:
+      - "React appears in 4 of 5 jobs - critical skill"
+      - "Data analysis required across all positions"
+      - "3 jobs mention API development"
+    - **Strategic Recommendations**:
+      - Suggested learning priorities
+      - Most versatile skill combinations
+      - Highest-impact technologies
+    
+    **Key Point**: Experience is about ENCOUNTERING OPPORTUNITIES, not about your background. Job descriptions represent the real world of work students are exploring.
+    
+    **Escape Hatch**: 
+    - Exploration: "Want to upload different jobs?" or "Ready to proceed with these?"
+    - Interview: "Is this the right job description?" or "Need to analyze a different role?"
 
     **Future Enhancements:**
-    - Voice input capabilities
-    - Deeper Ignatian-style prompting
-    - Extended context from external research
+    - Direct API integration with job boards
+    - Industry trend analysis
+    - Salary data integration
+    - Company glassdoor reviews
+    - Alumni connection suggestions
 
 3.  **Reflection (Enhanced with Sense-Making)**
 
@@ -272,6 +511,12 @@ LLM-driven personalization:
       intriguing linkages, and presents a comprehensive synthesis showing 
       "Here's what's resonating: your narrative, your connections, your 
       unique strengths."
+
+    - **Project Opportunity Recognition**: 
+      * "Which job tasks would I enjoy demonstrating?"
+      * "What problems could I solve that matter to me?"
+      * "Which technologies excite me to learn?"
+      * "Where can I add unique value?"
 
     - **Ignatian Reflection Phase**: The agent shifts into the heart of the 
       Ignatian process, using LLM-powered questions to prompt students to 
@@ -289,34 +534,97 @@ LLM-driven personalization:
 
     - **Deep Engagement**: App encourages thoughtful written reflection with 
       contextual guidance rooted in Ignatian pedagogical principles.
+    
+    **Escape Hatch**: If reflection reveals misalignment: "Would you like to explore why this doesn't fit?" Capture learning and redirect to new opportunities.
 
-4.  **Action**
+4.  **Action (Portfolio Project Creation)**
 
-    - Armed with synthesis and reflection insights, the LLM crafts a tangible, 
-      hands-on portfolio project plan or artifact.
-
-    - Project is directly mapped to both employer's actual needs and the
-      student's personal/interpersonal narrative as established through
-      the integrated reflection process, making it an authentic extension of both.
-
-    - Clear, actionable steps are displayed for student follow-through
-      and later interview discussion.
+    **Portfolio Project Generation - Two Approaches:**
+    
+    **A. Multi-Target Project (Exploration Mode):**
+    - **Smart Project Generator** analyzes ALL uploaded job descriptions:
+      - Finds overlapping technologies and requirements
+      - Identifies common problem domains
+      - Discovers shared competencies
+    - **Strategic Project Design**:
+      - ONE project addressing multiple roles
+      - Uses most common technologies from all jobs
+      - Solves problems relevant to multiple positions
+      - Maximizes skill demonstration efficiency
+    - **Coverage Analysis**:
+      - "This project demonstrates 85% of Role A requirements"
+      - "Covers 75% of Role B technical skills"
+      - "Addresses 70% of Role C responsibilities"
+    - **Example Multi-Target Projects**:
+      - Full-stack web app using React/Node/PostgreSQL (covers Frontend, Backend, Full-stack)
+      - Data dashboard with Python/SQL/Tableau (covers Data Analyst, BI Developer, Data Engineer)
+      - Mobile app with React Native/Firebase (covers Mobile Dev, Frontend, Full-stack)
+    
+    **B. Focused Project (Interview Prep Mode):**
+    - **Precision Project Generator** for single job:
+      - Exactly matched to specific role requirements
+      - Uses all required technologies
+      - Addresses company-specific challenges
+      - Optimized for interview presentation
+    - **Deep Customization**:
+      - Company branding elements
+      - Industry-specific features
+      - Role-specific demonstrations
+    
+    **Common Features (Both Modes):**
+    - **Values Integration**: Projects reflect student's mission
+    - **Implementation Blueprint**:
+      - Week-by-week development plan
+      - Technical architecture diagrams
+      - Feature prioritization (MVP vs. nice-to-have)
+      - Testing and deployment strategies
+    - **Interview Preparation**:
+      - Talking points for each project feature
+      - Technical decision explanations
+      - Values connection narrative
+      - Demo flow for interviews
+    
+    **Strategic Value Proposition (Exploration Mode):**
+    Students can tell employers: "I analyzed multiple roles in your field and built this project to demonstrate the core competencies needed across the industry. This shows my:
+    - Strategic thinking beyond just coding
+    - Understanding of industry-wide needs
+    - Efficiency in skill development
+    - Versatility across related roles"
+    
+    **Project Selection Interface:**
+    - AI presents 3-5 project options
+    - Each with coverage scores for uploaded jobs
+    - Complexity and timeline estimates
+    - Values alignment indicators
+    
+    **Escape Hatch**: "Want to see different project ideas?" or "Ready to start building?"
 
 5.  **Evaluation**
 
     **Current Implementation:**
-    - Mock interview questions tailored to role and project
+    - **Portfolio Project Assessment:**
+      - Project quality and completion checklist
+      - Technical skill demonstration verification
+      - Values integration success metrics
+      - Interview-readiness evaluation
+    - Mock interview questions focused on portfolio presentation
     - Question categories: behavioral, technical, values-based, project-specific
     - Self-assessment framework with star ratings
     - Reflection prompts for each competency area
     - Final capstone reflection on IPP journey
     - Progress tracking before completion
+    
+    **Cyclical Journey Support:**
+    - "What would you do differently next time?"
+    - "Ready to explore another opportunity?"
+    - Save project artifacts for future cycles
 
     **Future Enhancements:**
     - Faculty co-pilot features
     - Video interview practice
     - Peer feedback integration
     - Dashboard for tracking progress
+    - Employer feedback collection
 
 ### Additional Functional Requirements
 
@@ -327,7 +635,7 @@ LLM-driven personalization:
   - All prompts and project plans dynamically adapt based on contents
     (no generic templates).
 
-- **Automated Contextual Research**
+- **Automated Contextual Research** (Future Enhancement)
 
   - LLM brings in live research on company, industry, and job to enrich
     all subsequent prompts and project generation.
@@ -338,13 +646,21 @@ LLM-driven personalization:
 
 - **Portfolio Artifact Export**
 
-  - Enables PDF and/or web export of project plans and reflection
-    records.
+  - Enables PDF and/or web export of:
+    - Complete portfolio project documentation
+    - Implementation blueprints and code
+    - Values integration narrative
+    - Interview talking points
+    - Reflection journey record
 
 - **Project Tracking Dashboard**
 
-  - Tracks user's progress through IPP stages, project status, and
-    reflection history.
+  - Tracks user's:
+    - Portfolio project development progress
+    - IPP journey completion (with ability to revisit)
+    - Values-skills alignment scores
+    - Interview readiness metrics
+    - Cyclical journey patterns
 
 - **Analytics and Feedback**
 
@@ -359,38 +675,63 @@ LLM-driven personalization:
 
 - Users land and authenticate quickly via Google sign-in.
 
-- Onboarding clearly presents the IPP: "five-stage cycle built for head,
-  heart, and hands," and the role of the LLM in enriching every phase
-  with high-context adaptation.
+- **Path Selection Screen**: Immediately after sign-in:
+  - "Where are you in your job search journey?"
+  - Two clear options with explanations:
+    - **Exploration Mode**: "I'm researching opportunities" (Upload 3-5 jobs, create multi-purpose project)
+    - **Interview Prep Mode**: "I have an interview scheduled" (Upload 1 job, create focused project)
+  - Visual indicators showing time commitment for each path
 
-- Short explanation sets up why users provide both resume and job
-  description, and how stepwise engagement advances them from "just
-  another applicant" to reflective, confidence-filled candidate.
+- Onboarding clearly presents the IPP: "five-stage cycle built for head,
+  heart, and hands," adapted to your chosen path.
+
+- Clear explanation of the journey:
+  - **Context**: Upload your resume (who you are)
+  - **Experience**: Upload job description(s) (what's out there)
+  - **Reflection**: Connect opportunities with values
+  - **Action**: Create strategic portfolio project
+  - **Evaluation**: Prepare for interviews
 
 ### Core Journey through the IPP
 
 1.  **Context**
 
     **Current Implementation:**
-    - Upload job description and resume with drag-and-drop
-    - View real-time 5-step analysis progress
-    - Receive comprehensive analysis results
+    - Upload resume via drag-and-drop interface
+    - View LLM extraction of personal context from resume
+    - Verify extracted information (education, experience, skills)
+    - Answer 2-3 quick supplemental questions
+    - **NO job descriptions here** - Context is about YOU
+    - Path-specific messaging:
+      - Exploration: "Let's understand your background before exploring opportunities"
+      - Interview: "Let's quickly capture your profile for targeted preparation"
 
     **Future Enhancements:**
-    - Background profile form
-    - External insights integration
+    - Progressive profiling throughout journey
+    - Skills self-assessment
+    - Values inventory
 
 2.  **Experience**
 
-    - UI visualizes overlaps and distinctive elements between student's
-      resume, background, and job/industry info.
-
-    - Students review these, then engage in voice or text input to
-      select, elaborate on, or narrate standout experiences.
-
-    - LLM-powered Ignatian-style prompts draw out not just what they've
-      done, but what they remember or feel most strongly about these
-      experiences.
+    **Exploration Mode UI:**
+    - Multi-upload interface: "Upload 3-5 job descriptions that interest you"
+    - Real-time parsing shows extracted requirements
+    - Interactive Venn diagram appears showing overlaps
+    - "Overlap Intelligence" dashboard highlights:
+      - Common technologies (with frequency)
+      - Shared skills and responsibilities
+      - Strategic focus recommendations
+    
+    **Interview Prep Mode UI:**
+    - Single upload: "Upload the job description for your interview"
+    - Deep analysis with company context
+    - Detailed requirement breakdown
+    - Specific skill gap identification
+    
+    **Both Modes:**
+    - Visual skill matching with your resume
+    - Experience selection and elaboration
+    - Ignatian prompts about what energizes you
 
 3.  **Reflection (Enhanced with Sense-Making)**
 
@@ -439,8 +780,32 @@ LLM-driven personalization:
 
 ### Key UI Elements
 
-- IPP journey mapped visually at the top of every page: user always
-  knows which stage they're in.
+- **Mode Indicator**: Persistent badge showing current path (Exploration or Interview Prep)
+
+- **IPP Journey Visualization**: Circular/cyclical journey map at the top of every page showing:
+  - Current stage highlighted
+  - Completed stages marked
+  - Ability to navigate back to any previous stage
+  - Visual indication of portfolio project progress
+  - Path-specific timeline (flexible vs. deadline-driven)
+
+- **Portfolio Project Tracker**: Persistent sidebar showing:
+  - Current project ideas (with coverage scores in Exploration Mode)
+  - Implementation progress
+  - Values integration checkpoints
+  - Export readiness status
+
+- **Exploration Mode Specific**:
+  - Venn diagram visualization of job overlaps
+  - Coverage score matrix (project × jobs)
+  - "Power Technologies" ranked list
+  - Strategic recommendations panel
+
+- **Interview Prep Mode Specific**:
+  - Interview countdown timer
+  - Company-specific customization options
+  - Role-specific talking points
+  - Mock interview scheduler
 
 - Voice-to-text always available for richer input.
 
@@ -449,25 +814,116 @@ LLM-driven personalization:
 - Editable, transparent "LLM research notes" sidebar so students see
   what external info is being considered.
 
-- Secure Google sign-in & quick-access dashboard.
+- Secure Google sign-in & quick-access dashboard with path switching.
 
 ------------------------------------------------------------------------
 
-## Narrative
+## Portfolio Success Metrics
 
-Maya, a sophomore in LMU's College of Business Administration, is considering a summer internship for which she isn't sure she's qualified. She's new to the company and its sector, but wants to make her application stand out in a meaningful way that reflects her values and authentic self.
+### Key Performance Indicators
+- **Portfolio Completion Rate**: % of users who create at least one portfolio project
+- **Interview Conversion**: % increase in interview invitations when portfolio presented
+- **Offer Rate**: % of portfolio-presenting candidates who receive offers
+- **Values Alignment Score**: Self-reported alignment between project and personal values
+- **Time to Employment**: Reduction in job search duration with portfolio approach
 
-**Context Stage**: Maya signs in with her LMU Google account and uploads both her carefully researched job posting and her resume. The app's specialized LLM instantly analyzes both documents, extracting key responsibilities, skills, company mission, and industry context. Within minutes, she receives a comprehensive analysis showing how her background connects to the role, complete with insights about the company's values and the broader industry landscape.
+### Multi-Target Project Metrics (Exploration Mode)
+- **Coverage Efficiency**: Average % of requirements covered across multiple jobs by single project
+- **Application Multiplier**: Number of job applications served by one multi-target project
+- **Technology Overlap Score**: % of common technologies successfully incorporated
+- **Strategic Value Recognition**: Employer feedback on multi-role competency demonstration
+- **Time Savings**: Development hours saved by creating one project vs. multiple
 
-**Experience Stage**: Next, Maya reviews the AI-identified connections between her background and the target role. The interface presents her skills, experiences, and achievements categorized by relevance, with clear visual indicators showing strength scores. She selects the experiences that resonate most with her—her marketing internship, a finance competition, and a volunteer project—and elaborates on why each was meaningful. "The marketing internship taught me how data can tell human stories," she writes, "and the finance competition showed me how numbers can serve social good."
+### Path Comparison Metrics
+- **Path Selection**: % of students choosing Exploration vs. Interview Prep
+- **Success Rate by Path**: Job placement rates for each approach
+- **Project Completion Time**: Average days to complete by path type
+- **Path Switching**: % of students who transition between modes
+- **Satisfaction by Path**: User satisfaction scores for each journey type
 
-**Reflection Stage - Synthesis Phase**: The app then synthesizes Maya's selected experiences into a compelling narrative. The AI identifies three key connections: her ability to bridge technical and human elements, her consistent choice of collaborative over individual achievements, and her pattern of finding meaning through service to others. Maya reads her unique value proposition: "You bring analytical rigor combined with genuine care for human impact, consistently choosing collaborative approaches that bring out the best in others."
+### Qualitative Measures
+- Student confidence in presenting technical capabilities
+- Employer feedback on portfolio project quality
+- Values integration effectiveness in projects
+- Strategic thinking demonstration in interviews
+- Long-term career satisfaction (follow-up surveys)
 
-**Reflection Stage - Ignatian Phase**: Moving seamlessly into deeper reflection, Maya encounters carefully crafted questions rooted in Ignatian spirituality. "What deeper values do you see reflected in the work that energizes you most?" prompts her to explore how her passion for data-driven storytelling serves something larger than herself. "How might this role allow you to be 'a person for others'?" leads her to articulate how business analysis can create more equitable outcomes. Through thoughtful written reflection, Maya discovers that her calling involves using analytical skills to amplify voices that often go unheard.
+------------------------------------------------------------------------
 
-**Action Stage**: Armed with both intellectual insights and heart-centered clarity, the LLM crafts a portfolio project that authentically integrates Maya's analytical capabilities with her service-oriented values. The project plan includes concrete steps for analyzing company diversity metrics and proposing improvements—work that demonstrates technical competence while advancing social justice. Each deliverable connects directly to both the job requirements and Maya's personal mission.
+## Narrative: Two Students, Two Paths
 
-**Evaluation Stage**: Finally, Maya practices with AI-generated interview questions that draw from her entire journey. "Tell me about a time when your analytical work served a larger purpose," mirrors exactly the kind of authentic, values-driven responses she's now prepared to give. She exports her comprehensive portfolio, practices her interview responses, and approaches her interview not just as a qualified candidate, but as someone who understands how this role fits into her larger calling to serve others through business.
+### Path A: Maya's Exploration Journey
+
+Maya, a sophomore in LMU's College of Business Administration, isn't sure which direction to take for summer internships. She's interested in data analytics but sees opportunities in business intelligence, data science, and even product analytics.
+
+**Path Selection**: Upon signing in, Maya selects "I'm exploring opportunities" and enters Exploration Mode.
+
+**Context Stage**: Maya uploads her resume. The app extracts her profile: Business major, 3.7 GPA, marketing analytics internship, Data for Good club leader, Python and Tableau skills. She confirms the details and adds that she's open to relocating and values "Impact/Purpose" and "Growth Potential."
+
+**Experience Stage (Multi-Upload)**: Maya uploads 5 job descriptions she's found interesting:
+- Data Analyst at a nonprofit
+- Business Intelligence Analyst at a tech startup  
+- Junior Data Scientist at a healthcare company
+- Product Analyst at an e-commerce firm
+- Marketing Analyst at a sustainability startup
+
+The app's overlap analysis reveals:
+- Python appears in 4 of 5 jobs (80% coverage)
+- SQL required in all 5 positions (100% coverage)
+- Data visualization mentioned in all roles
+- Stakeholder communication is universal
+- Tableau appears in 3 positions, Power BI in 2
+
+A Venn diagram shows Maya that a project using Python, SQL, and Tableau could address 85% of the combined requirements.
+
+**Reflection Stage**: Maya reflects on which overlapping responsibilities excite her most. She realizes that "using data to tell stories that drive decisions" appears across all roles and deeply resonates with her values of impact and service.
+
+**Action Stage (Multi-Target Project)**: The AI suggests three multi-target projects. Maya selects "Community Impact Dashboard":
+- Uses Python for data processing (4 jobs)
+- SQL for database work (5 jobs)
+- Tableau for visualization (3 jobs)
+- Incorporates stakeholder features (5 jobs)
+- Addresses social impact (aligns with values)
+
+Coverage scores:
+- Nonprofit Data Analyst: 90%
+- BI Analyst: 85%
+- Data Scientist: 70%
+- Product Analyst: 80%
+- Marketing Analyst: 85%
+
+**Evaluation & Outcome**: Maya completes her project and applies to all 5 positions. In interviews, she explains: "I analyzed multiple data roles and built a project demonstrating the core competencies needed across the field. This shows my strategic thinking and versatility." She receives 3 interview invitations and 2 offers.
+
+### Path B: James's Interview Prep Journey
+
+James, a junior in Computer Science, has just secured an interview for a specific Frontend Developer position at his dream company in two weeks.
+
+**Path Selection**: James selects "I have an interview scheduled" and enters Interview Prep Mode.
+
+**Context Stage**: James uploads his resume. The app identifies his CS major, web development projects, React experience, and hackathon participation.
+
+**Experience Stage (Single Upload)**: James uploads the specific job description for the Frontend Developer role at TechCorp. The app performs deep analysis:
+- Required: React, TypeScript, Jest, accessibility standards
+- Preferred: GraphQL, design systems, performance optimization
+- Company values: user-centric design, inclusive products
+
+**Reflection Stage**: James reflects on why this specific role excites him - the company's mission of making technology accessible to all resonates with his experience helping his visually impaired sister use technology.
+
+**Action Stage (Focused Project)**: The AI generates a highly targeted project: "Accessible Recipe Finder"
+- Built with exact tech stack: React + TypeScript
+- Includes comprehensive Jest testing
+- Features advanced accessibility (screen reader support)
+- Implements GraphQL for efficient data fetching
+- Demonstrates performance optimization
+
+**Evaluation & Outcome**: James completes the focused project in 10 days, practices with role-specific interview questions, and presents his project during the interview. The hiring manager is impressed by the precise alignment with their needs. James receives an offer.
+
+### The Strategic Advantage
+
+Both students succeeded, but through different strategies:
+- Maya's multi-target approach gave her options and demonstrated strategic thinking
+- James's focused approach showed deep preparation for a specific opportunity
+- The app adapted to each student's needs while maintaining IPP integrity
 
 ------------------------------------------------------------------------
 
@@ -489,10 +945,17 @@ Maya, a sophomore in LMU's College of Business Administration, is considering a 
 
 ### User-Centric Metrics
 
-- Number of unique student users completing at least one project plan.
+- **Portfolio Metrics**:
+  - Number of portfolio projects completed per student
+  - Project quality scores (self and peer assessed)
+  - Time from project start to interview-ready
+  - Projects mentioned in successful interviews
+- **Journey Metrics**:
+  - Number of complete IPP cycles per user
+  - Stage revisit patterns (cyclical usage)
+  - Escape hatch usage and redirection success
+  - Values-project alignment scores
 - Number of students reporting increased confidence in interviews.
-- Number of project artifacts mentioned in job applications or
-  interviews (captured via student survey).
 - Change in students' self-reported sense of wholeness/integration
   (pre/post-app surveys).
 - **Current**: Stage completion rates and user satisfaction scores per IPP stage
@@ -537,6 +1000,140 @@ Maya, a sophomore in LMU's College of Business Administration, is considering a 
   - Student survey completions (confidence, wholeness, job outcome)
   - Cost per successful completion per LLM combination
   - A/B testing results for different model configurations
+
+------------------------------------------------------------------------
+
+## Smart Project Generation (Technical Implementation)
+
+### Multi-Job Analysis Algorithm
+
+The core innovation for Exploration Mode is the sophisticated overlap analysis that identifies common requirements across multiple job descriptions:
+
+#### 1. **Requirement Extraction Pipeline**
+```python
+def analyze_job_overlap(job_descriptions: List[str]):
+    # Extract from each job:
+    requirements = {
+        'technologies': extract_technologies(job),
+        'skills': extract_skills(job),
+        'responsibilities': extract_responsibilities(job),
+        'tools': extract_tools(job)
+    }
+    return requirements
+```
+
+#### 2. **Overlap Scoring System**
+- **Technology Frequency**: Count occurrences across all jobs
+- **Skill Importance**: Weight by how prominently featured
+- **Responsibility Similarity**: Semantic matching of similar tasks
+- **Tool Ecosystem**: Group related tools (e.g., React + Redux + Jest)
+
+#### 3. **Coverage Optimization**
+The AI optimizes for maximum coverage with minimum complexity:
+- Prioritize technologies appearing in 60%+ of jobs
+- Include "bridge technologies" that connect different roles
+- Balance breadth vs. depth of demonstration
+- Consider implementation time vs. coverage gain
+
+#### 4. **Project Generation Logic**
+```python
+def generate_multi_target_project(overlap_analysis, student_values):
+    # Find optimal project type
+    project_ideas = []
+    for project_type in PROJECT_TEMPLATES:
+        coverage = calculate_coverage(project_type, overlap_analysis)
+        alignment = calculate_values_alignment(project_type, student_values)
+        complexity = estimate_complexity(project_type)
+        
+        score = (coverage * 0.5) + (alignment * 0.3) + (1/complexity * 0.2)
+        project_ideas.append((project_type, score, coverage_breakdown))
+    
+    return top_3_projects_by_score(project_ideas)
+```
+
+### Visualization Components
+
+#### 1. **Interactive Venn Diagram**
+- D3.js-based visualization
+- Shows skill/technology overlaps
+- Clickable regions for details
+- Color-coded by frequency
+
+#### 2. **Coverage Heat Map**
+- Visual matrix: Projects × Job Requirements
+- Color intensity shows coverage percentage
+- Hover for specific requirement details
+- Export as interview prep material
+
+#### 3. **Strategic Dashboard**
+- "Power Technologies" ranked list
+- "Universal Skills" identification
+- "Quick Wins" vs. "Deep Dives"
+- Suggested learning paths
+
+### Data Structures
+
+#### Job Analysis Schema
+```json
+{
+  "job_id": "uuid",
+  "title": "Frontend Developer",
+  "company": "TechCorp",
+  "requirements": {
+    "technologies": ["React", "TypeScript", "GraphQL"],
+    "skills": ["responsive design", "performance optimization"],
+    "tools": ["Git", "Webpack", "Jest"],
+    "responsibilities": ["build user interfaces", "collaborate with designers"]
+  },
+  "importance_weights": {
+    "React": 0.9,
+    "TypeScript": 0.7,
+    "GraphQL": 0.5
+  }
+}
+```
+
+#### Multi-Target Project Schema
+```json
+{
+  "project_id": "uuid",
+  "name": "Community Impact Dashboard",
+  "technologies": ["React", "Node.js", "PostgreSQL", "D3.js"],
+  "coverage_scores": {
+    "job_1": 0.85,
+    "job_2": 0.75,
+    "job_3": 0.80
+  },
+  "implementation_plan": {
+    "week_1": ["Setup and database design"],
+    "week_2": ["Backend API development"],
+    "week_3": ["Frontend components"],
+    "week_4": ["Visualization and polish"]
+  },
+  "talking_points": [
+    "Demonstrates full-stack capabilities",
+    "Shows data visualization skills",
+    "Addresses social impact values"
+  ]
+}
+```
+
+### Performance Optimizations
+
+1. **Caching Strategy**
+   - Cache parsed job descriptions
+   - Store overlap analysis results
+   - Reuse project templates
+
+2. **Parallel Processing**
+   - Concurrent job parsing
+   - Parallel coverage calculations
+   - Async project generation
+
+3. **Smart Defaults**
+   - Pre-built project templates
+   - Common technology combinations
+   - Industry-specific patterns
 
 ------------------------------------------------------------------------
 
@@ -685,6 +1282,27 @@ Maya, a sophomore in LMU's College of Business Administration, is considering a 
 
 ------------------------------------------------------------------------
 
+## The Portfolio Journey: How It All Connects
+
+### Journey Flow
+1. **Context** → Understand student's existing skills and values foundation
+2. **Experience** → Parse job descriptions to extract project requirements  
+3. **Reflection** → Identify which responsibilities align with values and excite the student
+4. **Action** → Create portfolio project using exact technologies from job posting
+5. **Evaluation** → Measure project's impact on job placement success
+6. **Cycle Back** → Use learnings to explore new opportunities or deepen current path
+
+### Why Portfolio Projects Work
+- Transform abstract skills into tangible demonstrations
+- Show employers exactly what value students bring
+- Address real company challenges  
+- Prove technical competence with required tools
+- Differentiate candidates through values-driven work
+- Provide concrete interview talking points
+- Significantly increase offer rates
+
+------------------------------------------------------------------------
+
 ## Technical Debt & Future Roadmap
 
 ### Identified Gaps from Original Vision
@@ -803,19 +1421,23 @@ The complete Ignatian Pedagogical Paradigm has been successfully implemented, pr
 ## Summary: Current vs. Future State
 
 ### What We Built (MVP)
-- ✅ Complete 5-stage IPP journey implementation
+- ✅ Complete 5-stage IPP journey implementation with portfolio focus
 - ✅ Single efficient LLM (GPT-4o-mini) handling all stages
 - ✅ Document-based analysis with multiple evidence points
 - ✅ Real-time progress tracking and user feedback
 - ✅ Values-based reflection and project generation
 - ✅ Mock interview preparation and self-assessment
 - ✅ Cost-effective solution (~$0.15 per user journey)
+- ✅ Cyclical navigation allowing stage revisiting
+- ✅ Escape hatches for authentic discernment
 
 ### What We Learned
+- Portfolio projects are the key differentiator for job placement
 - Single LLM approach delivers 80% of value at 20% complexity
 - Users prioritize speed and clarity over architectural sophistication
 - Core IPP pedagogy matters more than technical complexity
 - Evidence-based matching with explanations builds user confidence
+- Cyclical journey supports deeper learning and authentic choices
 
 ### Future Vision Preserved
 - Multi-LLM orchestration for specialized performance
@@ -825,7 +1447,8 @@ The complete Ignatian Pedagogical Paradigm has been successfully implemented, pr
 - Enhanced personalization with user profiling
 - Faculty collaboration features
 - Advanced analytics and A/B testing
+- Portfolio sharing and peer feedback features
 
-The current implementation provides a solid, working foundation that successfully guides students through the complete Ignatian journey. Future enhancements can be added incrementally based on user feedback and institutional priorities.
+The current implementation provides a solid, working foundation that successfully guides students through the complete Ignatian journey toward creating compelling portfolio projects. Future enhancements can be added incrementally based on user feedback and institutional priorities.
 
 ------------------------------------------------------------------------
