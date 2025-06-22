@@ -1,0 +1,13 @@
+#!/bin/bash
+# Git hook to remind about updating CHANGELOG.md
+# To use: ln -s ../../.githooks/prepare-commit-msg .git/hooks/prepare-commit-msg
+
+# Add reminder comments to commit message
+echo "" >> $1
+echo "# Remember to update CHANGELOG.md if this commit includes:" >> $1
+echo "# - New features → [Unreleased] Added" >> $1
+echo "# - Changes to existing features → [Unreleased] Changed" >> $1
+echo "# - Bug fixes → [Unreleased] Fixed" >> $1
+echo "# - Removed features → [Unreleased] Removed" >> $1
+echo "#" >> $1
+echo "# Delete these comments before committing." >> $1

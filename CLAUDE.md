@@ -2,11 +2,62 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Code Style & Conventions
+
+### TypeScript/React
+- Use TypeScript for all new components
+- Follow existing patterns in the codebase
+- Prefer functional components with hooks over class components
+- Use absolute imports from configured paths (e.g., `@/components`)
+- Maintain consistent prop interfaces
+
+### Python/Backend
+- Follow PEP 8 style guidelines
+- Use type hints for function parameters and returns
+- Prefer async/await for I/O operations
+- Keep functions focused and single-purpose
+
+## Naming Conventions
+
+- **Components**: PascalCase (e.g., `PathSelection.tsx`, `ContextStage.tsx`)
+- **Utilities**: camelCase (e.g., `transformConnectionsData.ts`, `getItemText.ts`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `SUPPORTED_FILE_FORMATS`)
+- **CSS Classes**: kebab-case (e.g., `mode-indicator`, `upload-area`)
+- **API Endpoints**: kebab-case (e.g., `/api/analysis/resume/start`)
+- **Database Tables**: snake_case (e.g., `document_analyses`)
+
 ## Development Workflow
 
-- **IMPORTANT**: Do NOT automatically commit and push changes
-- Wait for explicit user instruction before running `git commit` or `git push`
-- The user will tell you when they want to commit/push (e.g., "commit these changes" or "/user:push")
+### Important Rules
+- **NO automatic commits** - Wait for explicit user instruction
+- **NO proactive file creation** - Only create files when necessary
+- **NO emojis in code** - Unless explicitly requested by user
+- **Prefer editing existing files** over creating new ones
+
+### After Code Changes
+1. Run linters: `npm run lint` (frontend) or `flake8` (backend)
+2. Run type checking: `npm run typecheck` (frontend)
+3. Test changes in browser before marking complete
+4. Update `tasks.md` with implementation details
+5. **Update `CHANGELOG.md`** under [Unreleased] section if changes include:
+   - New features → Added
+   - Modified functionality → Changed
+   - Bug fixes → Fixed
+   - Removed features → Removed
+6. Note any new technical debt or follow-up tasks
+
+### Commit Message Format
+```
+type: brief description
+
+Longer explanation if needed
+
+🤖 Generated with Claude Code
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+```
+
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 
 ## Project Overview
 
@@ -23,16 +74,26 @@ Based on the PRD, the system will consist of:
 - **AI Integration**: LLM API calls for document parsing, research, and project generation
 - **Exports**: PDF/Web export functionality for portfolio artifacts
 
-## Core User Flow (IPP Stages)
+## IPP Implementation Notes
 
-The application follows the five-stage Ignatian Pedagogical Paradigm:
+### Core Principles
+- **Context = Resume Only**: Understanding who the student is
+- **Experience = Job Descriptions**: Exploring career opportunities
+- Maintain Ignatian values throughout all stages
+- Each stage should validate completion before proceeding
+- Support cyclical navigation (users can go back)
 
-1. **Context**: Upload job description + resume, LLM parses and researches
-2. **Experience**: Interactive visualization of overlaps and student engagement
-3. **Sense-Making**: Synthesis and connection identification
-4. **Reflection**: Deep Ignatian-style prompts for meaning and values
-5. **Action**: LLM-generated portfolio project plans
-6. **Evaluation**: Project review and mock interview preparation
+### Stage Requirements
+1. **Context**: Resume upload and personal background
+2. **Experience**: Job descriptions (1 for Interview Prep, 3-5 for Exploration)
+3. **Reflection**: Values-based questions and synthesis
+4. **Action**: Portfolio project generation
+5. **Evaluation**: Interview preparation and self-assessment
+
+### Path-Specific Considerations
+- **Exploration Mode**: Focus on overlap analysis and multi-target projects
+- **Interview Prep Mode**: Focus on single job deep alignment
+- Always show mode indicator throughout the journey
 
 ## Key Features
 
@@ -62,6 +123,36 @@ The application follows the five-stage Ignatian Pedagogical Paradigm:
 - Modified LLM prompts to return multiple evidence points per job requirement
 - Added real-time progress tracking for the 5-step analysis pipeline
 - Updated frontend to handle both string and array evidence formats
+
+## Testing Requirements
+
+### UI Testing
+- Test all changes in browser before marking complete
+- Verify responsive design on different screen sizes
+- Check error states and loading states
+- Ensure proper form validation
+- Test navigation flow between IPP stages
+
+### LLM Testing
+- Verify LLM responses match expected format
+- Test with various resume formats (PDF parsing)
+- Check handling of malformed job descriptions
+- Ensure extraction includes all required fields
+- Test timeout and error scenarios
+
+### Integration Testing
+- Test authentication flow end-to-end
+- Verify file upload size limits
+- Check session persistence across stages
+- Test path switching scenarios
+- Verify data persistence in database
+
+### Edge Cases to Consider
+- Empty or minimal resumes
+- Non-English documents
+- Very large files
+- Network interruptions during analysis
+- Multiple simultaneous uploads
 
 ## Commands
 
@@ -149,3 +240,42 @@ The app uses Google OAuth2 for authentication. Required environment variables:
 - `/backend/app/services/prompt_templates.py` - Organized prompt templates
 - `/frontend/src/components/ConnectionsDetailTable.tsx` - Evidence display component
 - `/frontend/src/utils/transformConnectionsData.ts` - Data transformation utilities
+
+## Documentation Updates
+
+### When to Update Documentation
+- After completing any task, update `tasks.md`
+- After significant changes, update `CHANGELOG.md`
+- When discovering technical debt, add to `tasks.md`
+- For architectural decisions, update this file
+- For stakeholder updates, update `prd.md`
+
+### CHANGELOG.md Guidelines
+- Keep entries under `[Unreleased]` until version bump
+- Use clear, user-focused language
+- Group related changes together
+- Reference issue/task IDs when applicable
+- Categories: Added, Changed, Fixed, Removed
+
+### Documentation Standards
+- Keep code comments minimal (code should be self-documenting)
+- Document complex algorithms or business logic
+- Update API documentation for new endpoints
+- Include examples for utility functions
+- Reference specific file paths and line numbers in tasks
+
+## Restrictions & Best Practices
+
+### DO NOT
+- Create new files unless absolutely necessary
+- Add emojis to code (unless user requests)
+- Commit automatically (wait for user instruction)
+- Create proactive documentation (README.md, etc.)
+- Over-engineer solutions
+
+### ALWAYS
+- Check if functionality exists before creating new
+- Follow existing patterns in the codebase
+- Test in browser before completion
+- Update tasks.md after work
+- Consider Ignatian principles in implementation

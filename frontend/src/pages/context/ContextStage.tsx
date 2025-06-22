@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import DocumentUpload from '../../components/documents/DocumentUpload';
-import ConnectionsDetailTable from '../../components/ConnectionsDetailTable';
 import AnalysisProgress from '../../components/AnalysisProgress';
-import { transformConnectionsData } from '../../utils/transformConnectionsData';
 import { SUPPORTED_FILE_FORMATS } from '../../constants/fileFormats';
 
 interface Document {
@@ -17,20 +15,41 @@ interface Document {
   content_text?: string;
 }
 
-interface AnalysisResult {
-  id: number;
+interface ResumeAnalysis {
+  id?: number;
   status: 'pending' | 'processing' | 'completed' | 'failed';
-  resume_analysis?: any;
-  job_analysis?: any;
-  connections_analysis?: any;
-  context_summary?: string;
-  role_fit_narrative?: string;
-  strengths?: string[];
-  gaps?: string[];
+  resume_analysis?: {
+    skills?: any;
+    experience?: any[];
+    education?: any;
+    achievements?: string[];
+    summary?: string;
+    character_strengths?: Array<{
+      strength: string;
+      evidence: string;
+      ignatian_dimension: string;
+    }>;
+    values_indicators?: {
+      service_orientation?: string[];
+      collaboration?: string[];
+      continuous_learning?: string[];
+      excellence_pursuit?: string[];
+    };
+    growth_mindset?: {
+      indicators?: string[];
+      development_areas?: string[];
+      readiness_for_growth?: string;
+    };
+    strengths?: Array<{
+      strength: string;
+      evidence: string;
+      workplace_value: string;
+    }>;
+  };
   progress_step?: string;
   progress_message?: string;
   error_message?: string;
-  created_at: string;
+  created_at?: string;
   completed_at?: string;
 }
 
@@ -41,15 +60,17 @@ const ContextStage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
-  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysis | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
-  const [showDetailedEvidence, setShowDetailedEvidence] = useState(false);
+  
+  // Get the selected path from sessionStorage
+  const selectedPath = sessionStorage.getItem('selectedPath') || 'exploration';
 
   useEffect(() => {
     loadDocuments();
-    checkLatestAnalysis();
+    checkLatestResumeAnalysis();
   }, []);
 
   useEffect(() => {
@@ -60,6 +81,7 @@ const ContextStage: React.FC = () => {
       }
     };
   }, [pollingInterval]);
+
 
   // Removed auto-trigger to allow manual analysis initiation
   // Users can now review their uploads before starting analysis
@@ -85,7 +107,8 @@ const ContextStage: React.FC = () => {
     }
   };
 
-  const checkLatestAnalysis = async () => {
+
+  const checkLatestResumeAnalysis = async () => {
     if (!token) return;
 
     try {
@@ -97,7 +120,7 @@ const ContextStage: React.FC = () => {
 
       if (response.ok) {
         const analysisData = await response.json();
-        setAnalysis(analysisData);
+        setResumeAnalysis(analysisData);
         
         // Start polling if analysis is in progress
         if (analysisData.status === 'processing' || analysisData.status === 'pending') {
@@ -106,7 +129,7 @@ const ContextStage: React.FC = () => {
       }
     } catch (error) {
       // No analysis exists yet, which is fine
-      console.log('No existing analysis found');
+      console.log('No existing resume analysis found');
     }
   };
 
@@ -117,6 +140,9 @@ const ContextStage: React.FC = () => {
     
     // Clear success message after 3 seconds
     setTimeout(() => setUploadSuccess(null), 3000);
+    
+    // Don't auto-trigger analysis - user will click button manually
+    // TODO: Enable auto-trigger when resume-only analysis endpoint is available
   };
 
   const handleUploadError = (error: string) => {
@@ -129,31 +155,24 @@ const ContextStage: React.FC = () => {
   };
 
   const hasRequiredDocuments = () => {
-    return getExistingDocument('resume') && getExistingDocument('job_description');
+    // Context stage now only requires resume
+    return getExistingDocument('resume');
   };
 
-  const hasDocumentsChangedSinceAnalysis = () => {
-    if (!analysis || !analysis.created_at) return false;
-    
-    const analysisTime = new Date(analysis.created_at).getTime();
-    
-    return documents.some(doc => {
-      const uploadTime = new Date(doc.created_at).getTime();
-      return uploadTime > analysisTime;
-    });
-  };
-
-  const handleStartAnalysis = async () => {
+  const handleStartResumeAnalysis = async () => {
     const resumeDoc = getExistingDocument('resume');
-    const jobDoc = getExistingDocument('job_description');
     
-    if (!resumeDoc || !jobDoc || !token) return;
+    if (!resumeDoc || !token) return;
 
     setAnalysisLoading(true);
     setAnalysisError(null);
+    
+    // Clear previous analysis results when re-analyzing
+    setResumeAnalysis(null);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000/api'}/analysis/start`, {
+      // Use the new resume-only analysis endpoint
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000/api'}/analysis/resume/start`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -161,18 +180,17 @@ const ContextStage: React.FC = () => {
         },
         body: JSON.stringify({
           resume_document_id: resumeDoc.id,
-          job_document_id: jobDoc.id,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        setAnalysis({
+        setResumeAnalysis({
           id: data.analysis_id,
           status: data.status,
           created_at: new Date().toISOString(),
           progress_step: 'initializing',
-          progress_message: 'Starting document analysis...'
+          progress_message: 'Starting enhanced Ignatian analysis...'
         });
         
         // Start polling for updates
@@ -204,7 +222,7 @@ const ContextStage: React.FC = () => {
 
         if (response.ok) {
           const analysisData = await response.json();
-          setAnalysis(analysisData);
+          setResumeAnalysis(analysisData);
           
           // Stop polling when analysis is complete or failed
           if (analysisData.status === 'completed' || analysisData.status === 'failed') {
@@ -220,26 +238,30 @@ const ContextStage: React.FC = () => {
     setPollingInterval(interval);
   };
 
+
+
+
   const canProceed = () => {
-    return hasRequiredDocuments() && analysis?.status === 'completed';
+    // Context stage can proceed once resume is uploaded
+    return hasRequiredDocuments();
   };
 
-  const getAnalysisStatusText = () => {
-    if (!analysis) return null;
-    
-    switch (analysis.status) {
-      case 'pending':
-        return 'Analysis in Progress';
-      case 'processing':
-        return 'Analysis in Progress';
-      case 'completed':
-        return 'Analysis Complete';
-      case 'failed':
-        return 'Analysis Failed';
-      default:
-        return 'Unknown status';
+  // Utility function to safely extract text from analysis items
+  const getItemText = (item: any): string => {
+    if (typeof item === 'string') return item;
+    if (item?.name) return item.name;
+    if (item?.title) return item.title;
+    if (item?.text) return item.text;
+    if (item?.value) return item.value;
+    if (item?.description) return item.description;
+    // If it's still an object, try to extract any string property
+    if (typeof item === 'object' && item !== null) {
+      const firstStringValue = Object.values(item).find(val => typeof val === 'string');
+      if (firstStringValue) return firstStringValue as string;
     }
+    return ''; // Return empty string instead of stringifying to avoid showing JSON
   };
+
 
   if (loading) {
     return (
@@ -258,12 +280,33 @@ const ContextStage: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Context Stage
+            Context Stage: Understanding Who You Are
           </h1>
+          {/* Path Indicator */}
+          <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mb-4
+            {selectedPath === 'exploration' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">
+            {selectedPath === 'exploration' ? (
+              <>
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
+                Exploration Mode
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+                Interview Prep Mode
+              </>
+            )}
+          </div>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-6">
             Welcome to the first stage of the Ignatian Pedagogical Paradigm. 
-            Upload your resume and target job description to begin your journey 
-            toward a personalized portfolio project.
+            The Context stage is about understanding <strong>who you are</strong> - your background, 
+            skills, and experiences. Upload your resume to begin establishing your personal context.
           </p>
           
           {/* General Instructions */}
@@ -273,11 +316,11 @@ const ContextStage: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <div className="text-left">
-                <h3 className="text-sm font-medium text-gray-900 mb-2">Before you begin:</h3>
+                <h3 className="text-sm font-medium text-gray-900 mb-2">What you'll need:</h3>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Have your current resume ready ({SUPPORTED_FILE_FORMATS.display.full} format)</li>
-                  <li>• Save the job posting you're interested in as a {SUPPORTED_FILE_FORMATS.display.full} file</li>
-                  <li>• Both files should be under {SUPPORTED_FILE_FORMATS.maxSizeDisplay}</li>
+                  <li>• Your current resume in {SUPPORTED_FILE_FORMATS.display.full} format</li>
+                  <li>• File should be under {SUPPORTED_FILE_FORMATS.maxSizeDisplay}</li>
+                  <li>• Job descriptions will be uploaded in the next stage (Experience)</li>
                 </ul>
               </div>
             </div>
@@ -386,90 +429,89 @@ const ContextStage: React.FC = () => {
                 >
                   Upload different resume
                 </button>
+                
+                {/* Re-analyze button */}
+                {resumeAnalysis?.status === 'completed' && (
+                  <div className="mt-4">
+                    <div className="border-t pt-4">
+                      <button
+                        onClick={handleStartResumeAnalysis}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+                        disabled={analysisLoading}
+                      >
+                        {analysisLoading ? 'Re-analyzing...' : 'Re-analyze with Enhanced Insights'}
+                      </button>
+                      <p className="mt-2 text-xs text-gray-500">
+                        Get deeper Ignatian pedagogical insights from your resume
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          {/* Job Description Upload */}
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="mb-4">
-              {getExistingDocument('job_description') ? (
-                <div className="flex items-center text-green-600 mb-2">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Job description uploaded
-                </div>
-              ) : (
-                <div className="flex items-center text-gray-400 mb-2">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Job description required
-                </div>
-              )}
+          {/* Job Descriptions - Next Stage */}
+          <div className="bg-gray-50 rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Job Descriptions Come Next
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                In the Experience stage, you'll upload:
+              </p>
+
+              <div className="space-y-2 text-sm text-gray-600">
+                {selectedPath === 'exploration' ? (
+                  <>
+                    <div className="flex items-center justify-center">
+                      <svg className="w-4 h-4 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4" />
+                      </svg>
+                      <span>3-5 job descriptions for multi-target project</span>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded-md mt-3">
+                      <p className="text-xs text-blue-700">
+                        <strong>Tip:</strong> Start collecting job postings that interest you. 
+                        Save them as PDF or text files for the next stage.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-center">
+                      <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4" />
+                      </svg>
+                      <span>1 specific job description for your interview</span>
+                    </div>
+                    <div className="bg-green-50 p-3 rounded-md mt-3">
+                      <p className="text-xs text-green-700">
+                        <strong>Tip:</strong> Have the exact job posting for your interview ready 
+                        as a PDF or text file.
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-
-            {/* Instructions for job description export */}
-            {!getExistingDocument('job_description') && (
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <div className="flex">
-                  <svg className="w-5 h-5 text-blue-400 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <div className="text-sm text-blue-800">
-                    <p className="font-medium mb-1">Need to save a job posting?</p>
-                    <ul className="text-xs space-y-1 list-disc list-inside">
-                      <li><strong>From web browser:</strong> Print page → "Save as PDF" or Ctrl/Cmd+P → PDF</li>
-                      <li><strong>Copy text:</strong> Select all text → Copy → Paste into text document → Save as .txt</li>
-                      <li><strong>From email:</strong> Forward to yourself → Print to PDF or save as text file</li>
-                      <li><strong>From job sites:</strong> Look for "Save as PDF" or "Print" options</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {!getExistingDocument('job_description') ? (
-              <>
-                <DocumentUpload
-                  documentType="job_description"
-                  onUploadSuccess={handleUploadSuccess}
-                  onUploadError={handleUploadError}
-                />
-                <p className="text-xs text-gray-500 mt-2 text-center">
-                  Supported formats: {SUPPORTED_FILE_FORMATS.display.short}
-                </p>
-              </>
-            ) : (
-              <div className="text-center py-8">
-                <div className="text-green-600 mb-2">
-                  <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <p className="text-gray-600">
-                  {getExistingDocument('job_description')?.original_filename}
-                </p>
-                <button
-                  onClick={() => setDocuments(prev => prev.filter(doc => doc.document_type !== 'job_description'))}
-                  className="mt-2 text-sm text-blue-600 hover:text-blue-800"
-                >
-                  Upload different job description
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Analysis Status */}
+        {/* Resume Analysis Section */}
         {hasRequiredDocuments() && (
           <div className="mb-8">
             {analysisError && (
               <div className="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
                 {analysisError}
                 <button 
-                  onClick={handleStartAnalysis}
+                  onClick={handleStartResumeAnalysis}
                   className="ml-4 underline hover:no-underline"
                   disabled={analysisLoading}
                 >
@@ -478,223 +520,336 @@ const ContextStage: React.FC = () => {
               </div>
             )}
             
-            {/* Manual Analysis Button */}
-            {!analysis && !analysisLoading && (
-              <div className="text-center p-6 bg-blue-50 border border-blue-200 rounded-lg">
-                <svg className="w-12 h-12 mx-auto mb-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            {/* Resume Analysis Info */}
+            {(!resumeAnalysis || resumeAnalysis.status === 'failed') && !analysisLoading && (
+              <div className="text-center p-6 bg-amber-50 border border-amber-200 rounded-lg">
+                <svg className="w-12 h-12 mx-auto mb-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                <h3 className="text-lg font-medium text-blue-900 mb-2">Ready to Analyze</h3>
-                <p className="text-sm text-blue-700 mb-4">
-                  Your documents have been uploaded successfully. Click the button below to start the AI analysis.
+                <h3 className="text-lg font-medium text-amber-900 mb-2">Resume Analysis Coming Soon!</h3>
+                <p className="text-sm text-amber-700 mb-4">
+                  In the Context stage, our AI will analyze your resume to identify skills, experience, and strengths.
+                  For now, please proceed to the Experience stage where you'll upload job descriptions.
                 </p>
-                <button
-                  onClick={handleStartAnalysis}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                  disabled={analysisLoading}
-                >
-                  Analyze Documents
-                </button>
+                <div className="mt-4 text-xs text-amber-600">
+                  The full analysis will happen after you upload job descriptions in the next stage.
+                </div>
               </div>
             )}
             
-            {analysis && (
+            {/* Analysis Progress or Results */}
+            {resumeAnalysis && resumeAnalysis.status !== 'failed' && (
               <div className={`border rounded-lg p-6 ${
-                analysis.status === 'completed' ? 'bg-green-50 border-green-200' :
-                analysis.status === 'failed' ? 'bg-red-50 border-red-200' :
+                resumeAnalysis.status === 'completed' ? 'bg-green-50 border-green-200' :
                 'bg-blue-50 border-blue-200'
               }`}>
                 <div className={`text-center ${
-                  analysis.status === 'completed' ? 'text-green-800' :
-                  analysis.status === 'failed' ? 'text-red-800' :
-                  'text-blue-800'
+                  resumeAnalysis.status === 'completed' ? 'text-green-800' : 'text-blue-800'
                 }`}>
-                  {(analysis.status === 'pending' || analysis.status === 'processing') ? (
+                  {(resumeAnalysis.status === 'pending' || resumeAnalysis.status === 'processing') ? (
                     <AnalysisProgress 
-                      status={analysis.status}
-                      progressStep={analysis.progress_step}
-                      progressMessage={analysis.progress_message}
+                      status={resumeAnalysis.status}
+                      progressStep={resumeAnalysis.progress_step}
+                      progressMessage={resumeAnalysis.progress_message}
                     />
                   ) : (
                     <>
-                      {analysis.status === 'completed' && (
-                        <svg className="w-8 h-8 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                      {resumeAnalysis.status === 'completed' && (
+                        <>
+                          <svg className="w-8 h-8 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <h3 className="text-lg font-medium mb-4">Resume Analysis Complete</h3>
+                          
+                          {/* Display analysis results */}
+                          {resumeAnalysis.resume_analysis && (
+                            <div className="text-left bg-white rounded-md p-6 space-y-4">
+                              {resumeAnalysis.resume_analysis.summary && (
+                                <div>
+                                  <h4 className="font-semibold text-gray-900 mb-2">Summary</h4>
+                                  <p className="text-sm text-gray-700">{resumeAnalysis.resume_analysis.summary}</p>
+                                </div>
+                              )}
+                              
+                              {resumeAnalysis.resume_analysis.skills && (
+                                <div>
+                                  <h4 className="font-semibold text-gray-900 mb-2">Key Skills</h4>
+                                  {/* Handle new skills format with technical/soft categorization */}
+                                  {resumeAnalysis.resume_analysis.skills.technical || resumeAnalysis.resume_analysis.skills.soft ? (
+                                    <>
+                                      {resumeAnalysis.resume_analysis.skills.technical && resumeAnalysis.resume_analysis.skills.technical.length > 0 && (
+                                        <div className="mb-2">
+                                          <h5 className="text-sm font-medium text-gray-700 mb-1">Technical Skills</h5>
+                                          <div className="flex flex-wrap gap-2">
+                                            {resumeAnalysis.resume_analysis.skills.technical.map((skill: any, index: number) => (
+                                              <span key={`tech-${index}`} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                                {getItemText(skill)}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+                                      {resumeAnalysis.resume_analysis.skills.soft && resumeAnalysis.resume_analysis.skills.soft.length > 0 && (
+                                        <div>
+                                          <h5 className="text-sm font-medium text-gray-700 mb-1">Soft Skills</h5>
+                                          <div className="flex flex-wrap gap-2">
+                                            {resumeAnalysis.resume_analysis.skills.soft.map((skill: any, index: number) => (
+                                              <span key={`soft-${index}`} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                                                {getItemText(skill)}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </>
+                                  ) : Array.isArray(resumeAnalysis.resume_analysis.skills) && resumeAnalysis.resume_analysis.skills.length > 0 ? (
+                                    <div className="flex flex-wrap gap-2">
+                                      {resumeAnalysis.resume_analysis.skills.map((skill: any, index: number) => {
+                                        const skillText = getItemText(skill);
+                                        return skillText ? (
+                                          <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                            {skillText}
+                                          </span>
+                                        ) : null;
+                                      })}
+                                    </div>
+                                  ) : null}
+                                </div>
+                              )}
+                              
+                              {resumeAnalysis.resume_analysis.experience && resumeAnalysis.resume_analysis.experience.length > 0 && (
+                                <div>
+                                  <h4 className="font-semibold text-gray-900 mb-2">Experience Highlights</h4>
+                                  <div className="space-y-3">
+                                    {resumeAnalysis.resume_analysis.experience.map((exp: any, index: number) => {
+                                      // Handle new experience format with role, organization, etc.
+                                      if (typeof exp === 'object' && exp.role) {
+                                        return (
+                                          <div key={index} className="bg-gray-50 p-3 rounded-md">
+                                            <h5 className="font-medium text-gray-900">{exp.role}</h5>
+                                            {exp.organization && <p className="text-sm text-gray-600">{exp.organization} {exp.duration ? `• ${exp.duration}` : ''}</p>}
+                                            {exp.key_achievements && exp.key_achievements.length > 0 && (
+                                              <ul className="mt-2 space-y-1">
+                                                {exp.key_achievements.map((achievement: string, idx: number) => (
+                                                  <li key={idx} className="text-sm text-gray-700 flex items-start">
+                                                    <span className="mr-2">•</span>
+                                                    <span>{achievement}</span>
+                                                  </li>
+                                                ))}
+                                              </ul>
+                                            )}
+                                            {exp.service_impact && (
+                                              <p className="mt-2 text-sm text-purple-700 italic">
+                                                <span className="font-medium">Service Impact:</span> {exp.service_impact}
+                                              </p>
+                                            )}
+                                          </div>
+                                        );
+                                      } else {
+                                        // Fallback for old format
+                                        const expText = getItemText(exp);
+                                        return expText ? (
+                                          <div key={index} className="text-sm text-gray-700 flex items-start">
+                                            <span className="mr-2">•</span>
+                                            <span>{expText}</span>
+                                          </div>
+                                        ) : null;
+                                      }
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {resumeAnalysis.resume_analysis.education && (
+                                <div>
+                                  <h4 className="font-semibold text-gray-900 mb-2">Education</h4>
+                                  {/* Handle new education format */}
+                                  {typeof resumeAnalysis.resume_analysis.education === 'object' && !Array.isArray(resumeAnalysis.resume_analysis.education) ? (
+                                    <div className="bg-gray-50 p-3 rounded-md">
+                                      {resumeAnalysis.resume_analysis.education.degree && (
+                                        <h5 className="font-medium text-gray-900">{resumeAnalysis.resume_analysis.education.degree}</h5>
+                                      )}
+                                      {resumeAnalysis.resume_analysis.education.institution && (
+                                        <p className="text-sm text-gray-600">{resumeAnalysis.resume_analysis.education.institution}</p>
+                                      )}
+                                      {resumeAnalysis.resume_analysis.education.achievements && resumeAnalysis.resume_analysis.education.achievements.length > 0 && (
+                                        <ul className="mt-2 space-y-1">
+                                          {resumeAnalysis.resume_analysis.education.achievements.map((achievement: string, idx: number) => (
+                                            <li key={idx} className="text-sm text-gray-700">• {achievement}</li>
+                                          ))}
+                                        </ul>
+                                      )}
+                                      {resumeAnalysis.resume_analysis.education.extracurricular && resumeAnalysis.resume_analysis.education.extracurricular.length > 0 && (
+                                        <div className="mt-2">
+                                          <p className="text-sm font-medium text-gray-700">Activities & Values:</p>
+                                          <ul className="space-y-1">
+                                            {resumeAnalysis.resume_analysis.education.extracurricular.map((activity: string, idx: number) => (
+                                              <li key={idx} className="text-sm text-gray-600">• {activity}</li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : Array.isArray(resumeAnalysis.resume_analysis.education) && resumeAnalysis.resume_analysis.education.length > 0 ? (
+                                    <ul className="space-y-1">
+                                      {resumeAnalysis.resume_analysis.education.map((edu: any, index: number) => {
+                                        const eduText = getItemText(edu);
+                                        return eduText ? (
+                                          <li key={index} className="text-sm text-gray-700">{eduText}</li>
+                                        ) : null;
+                                      })}
+                                    </ul>
+                                  ) : null}
+                                </div>
+                              )}
+                              
+                              {/* New Ignatian Fields */}
+                              {resumeAnalysis.resume_analysis.character_strengths && resumeAnalysis.resume_analysis.character_strengths.length > 0 && (
+                                <div className="border-t pt-4">
+                                  <h4 className="font-semibold text-gray-900 mb-2">Character Strengths (Ignatian Analysis)</h4>
+                                  <div className="space-y-3">
+                                    {resumeAnalysis.resume_analysis.character_strengths.map((strength, index) => (
+                                      <div key={index} className="bg-purple-50 p-3 rounded-md">
+                                        <h5 className="font-medium text-purple-900">{strength.strength}</h5>
+                                        <p className="text-sm text-gray-700 mt-1">{strength.evidence}</p>
+                                        <span className="inline-block mt-2 text-xs bg-purple-200 text-purple-800 px-2 py-1 rounded">
+                                          {strength.ignatian_dimension}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {resumeAnalysis.resume_analysis.values_indicators && (
+                                <div className="border-t pt-4">
+                                  <h4 className="font-semibold text-gray-900 mb-2">Values & Service Orientation</h4>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    {resumeAnalysis.resume_analysis.values_indicators.service_orientation && resumeAnalysis.resume_analysis.values_indicators.service_orientation.length > 0 && (
+                                      <div className="bg-amber-50 p-3 rounded-md">
+                                        <h5 className="font-medium text-amber-900 mb-1">Service to Others</h5>
+                                        <ul className="text-sm text-gray-700 space-y-1">
+                                          {resumeAnalysis.resume_analysis.values_indicators.service_orientation.map((item, idx) => (
+                                            <li key={idx} className="flex items-start">
+                                              <span className="mr-1">•</span>
+                                              <span>{item}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                    {resumeAnalysis.resume_analysis.values_indicators.collaboration && resumeAnalysis.resume_analysis.values_indicators.collaboration.length > 0 && (
+                                      <div className="bg-blue-50 p-3 rounded-md">
+                                        <h5 className="font-medium text-blue-900 mb-1">Collaboration</h5>
+                                        <ul className="text-sm text-gray-700 space-y-1">
+                                          {resumeAnalysis.resume_analysis.values_indicators.collaboration.map((item, idx) => (
+                                            <li key={idx} className="flex items-start">
+                                              <span className="mr-1">•</span>
+                                              <span>{item}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                    {resumeAnalysis.resume_analysis.values_indicators.continuous_learning && resumeAnalysis.resume_analysis.values_indicators.continuous_learning.length > 0 && (
+                                      <div className="bg-green-50 p-3 rounded-md">
+                                        <h5 className="font-medium text-green-900 mb-1">Continuous Learning</h5>
+                                        <ul className="text-sm text-gray-700 space-y-1">
+                                          {resumeAnalysis.resume_analysis.values_indicators.continuous_learning.map((item, idx) => (
+                                            <li key={idx} className="flex items-start">
+                                              <span className="mr-1">•</span>
+                                              <span>{item}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                    {resumeAnalysis.resume_analysis.values_indicators.excellence_pursuit && resumeAnalysis.resume_analysis.values_indicators.excellence_pursuit.length > 0 && (
+                                      <div className="bg-indigo-50 p-3 rounded-md">
+                                        <h5 className="font-medium text-indigo-900 mb-1">Excellence (Magis)</h5>
+                                        <ul className="text-sm text-gray-700 space-y-1">
+                                          {resumeAnalysis.resume_analysis.values_indicators.excellence_pursuit.map((item, idx) => (
+                                            <li key={idx} className="flex items-start">
+                                              <span className="mr-1">•</span>
+                                              <span>{item}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {resumeAnalysis.resume_analysis.growth_mindset && (
+                                <div className="border-t pt-4">
+                                  <h4 className="font-semibold text-gray-900 mb-2">Growth Mindset & Development</h4>
+                                  <div className="bg-teal-50 p-4 rounded-md">
+                                    {resumeAnalysis.resume_analysis.growth_mindset.indicators && resumeAnalysis.resume_analysis.growth_mindset.indicators.length > 0 && (
+                                      <div className="mb-3">
+                                        <h5 className="font-medium text-teal-900 mb-1">Growth Indicators</h5>
+                                        <ul className="text-sm text-gray-700 space-y-1">
+                                          {resumeAnalysis.resume_analysis.growth_mindset.indicators.map((indicator, idx) => (
+                                            <li key={idx} className="flex items-start">
+                                              <span className="mr-1">•</span>
+                                              <span>{indicator}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                    {resumeAnalysis.resume_analysis.growth_mindset.development_areas && resumeAnalysis.resume_analysis.growth_mindset.development_areas.length > 0 && (
+                                      <div className="mb-3">
+                                        <h5 className="font-medium text-teal-900 mb-1">Areas for Development</h5>
+                                        <ul className="text-sm text-gray-700 space-y-1">
+                                          {resumeAnalysis.resume_analysis.growth_mindset.development_areas.map((area, idx) => (
+                                            <li key={idx} className="flex items-start">
+                                              <span className="mr-1">•</span>
+                                              <span>{area}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                    {resumeAnalysis.resume_analysis.growth_mindset.readiness_for_growth && (
+                                      <div>
+                                        <h5 className="font-medium text-teal-900 mb-1">Readiness Assessment</h5>
+                                        <p className="text-sm text-gray-700">{resumeAnalysis.resume_analysis.growth_mindset.readiness_for_growth}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {resumeAnalysis.resume_analysis.strengths && resumeAnalysis.resume_analysis.strengths.length > 0 && (
+                                <div className="border-t pt-4">
+                                  <h4 className="font-semibold text-gray-900 mb-2">Key Strengths & Workplace Value</h4>
+                                  <div className="space-y-3">
+                                    {resumeAnalysis.resume_analysis.strengths.map((strength, index) => (
+                                      <div key={index} className="bg-gray-50 p-3 rounded-md">
+                                        <h5 className="font-medium text-gray-900">{strength.strength}</h5>
+                                        <p className="text-sm text-gray-700 mt-1">
+                                          <span className="font-medium">Evidence:</span> {strength.evidence}
+                                        </p>
+                                        <p className="text-sm text-gray-600 mt-1">
+                                          <span className="font-medium">Workplace Value:</span> {strength.workplace_value}
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </>
                       )}
-                      
-                      {analysis.status === 'failed' && (
-                        <svg className="w-8 h-8 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      )}
-                      
-                      <h3 className="text-lg font-medium mb-2">{getAnalysisStatusText()}</h3>
                     </>
-                  )}
-                  
-                  {analysis.status === 'completed' && (analysis.context_summary || analysis.role_fit_narrative || analysis.strengths || analysis.gaps) && (() => {
-                    // Debug: Log what we have
-                    console.log('Analysis data:', { 
-                      has_summary: !!analysis.context_summary,
-                      has_narrative: !!analysis.role_fit_narrative,
-                      has_strengths: !!analysis.strengths,
-                      has_gaps: !!analysis.gaps,
-                      full_analysis: analysis
-                    });
-                    
-                    return (
-                      <div className="text-left bg-white rounded-md p-4 mb-4">
-                        {/* Structured format if available */}
-                        {(analysis.role_fit_narrative || analysis.strengths || analysis.gaps) ? (
-                          <div className="space-y-5">
-                            {/* Role-Fit Narrative */}
-                            {analysis.role_fit_narrative && (
-                              <div>
-                                <h5 className="text-sm font-semibold text-gray-900 mb-2">
-                                  Why You Make Sense as a {analysis?.job_analysis?.job_title || 'Candidate'} at {analysis?.job_analysis?.company || 'This Company'}
-                                </h5>
-                                <p className="text-sm text-gray-700 leading-relaxed">{analysis.role_fit_narrative}</p>
-                              </div>
-                            )}
-                            
-                            {/* Strengths */}
-                            {analysis.strengths && analysis.strengths.length > 0 && (
-                              <div>
-                                <h5 className="text-sm font-semibold text-gray-900 mb-2">
-                                  Strengths — Job Description Requirements Evident in Your Resume
-                                </h5>
-                                <ul className="space-y-1.5 ml-1">
-                                  {analysis.strengths.map((strength, index) => (
-                                    <li key={index} className="text-sm text-gray-700 flex items-start">
-                                      <span className="mr-2">•</span>
-                                      <span>{strength}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                            
-                            {/* Gaps */}
-                            {analysis.gaps && analysis.gaps.length > 0 && (
-                              <div>
-                                <h5 className="text-sm font-semibold text-gray-900 mb-2">
-                                  Gaps — Job Description Requirements Not Yet Evident in Your Resume
-                                </h5>
-                                <ul className="space-y-1.5 ml-1">
-                                  {analysis.gaps.map((gap, index) => (
-                                    <li key={index} className="text-sm text-gray-700 flex items-start">
-                                      <span className="mr-2">•</span>
-                                      <span>{gap}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                        ) : analysis.context_summary ? (
-                          /* Fallback to plain text summary */
-                          <div>
-                            <h4 className="font-medium mb-2 text-gray-900">Context Analysis Summary:</h4>
-                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{analysis.context_summary}</p>
-                          </div>
-                        ) : (
-                          /* No content available */
-                          <p className="text-sm text-gray-500 italic">No analysis content available. Please try running the analysis again.</p>
-                        )}
-                      </div>
-                    );
-                  })()}
-                  
-                  {analysis.error_message && (
-                    <p className="text-sm text-red-700 mb-4">
-                      {analysis.error_message}
-                    </p>
-                  )}
-                  
-                  {/* Redo Analysis Button */}
-                  {(analysis.status === 'completed' || analysis.status === 'failed') && !analysisLoading && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      {hasDocumentsChangedSinceAnalysis() && (
-                        <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                          <p className="text-sm text-yellow-800">
-                            <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            Documents have been updated since this analysis
-                          </p>
-                        </div>
-                      )}
-                      <button
-                        onClick={handleStartAnalysis}
-                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        disabled={analysisLoading}
-                      >
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Redo Analysis
-                      </button>
-                      <p className="text-xs text-gray-500 mt-2">
-                        Re-analyze your documents with updated AI insights
-                      </p>
-                    </div>
-                  )}
-                  
-                  {/* Show Detailed Evidence Button */}
-                  {analysis.status === 'completed' && analysis.connections_analysis && (
-                    <div className="mt-4">
-                      <button
-                        onClick={() => setShowDetailedEvidence(!showDetailedEvidence)}
-                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      >
-                        <svg 
-                          className={`w-4 h-4 mr-2 transition-transform ${showDetailedEvidence ? 'rotate-180' : ''}`} 
-                          fill="none" 
-                          stroke="currentColor" 
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                        {showDetailedEvidence ? 'Hide' : 'Show'} Detailed Evidence
-                      </button>
-                    </div>
                   )}
                 </div>
               </div>
             )}
           </div>
         )}
-        
-        {/* Detailed Evidence Table */}
-        {showDetailedEvidence && analysis?.connections_analysis && (() => {
-          const transformedData = transformConnectionsData(analysis.connections_analysis);
-          console.log('Original connections data:', analysis.connections_analysis);
-          console.log('Transformed connections data:', transformedData);
-          
-          if (!transformedData) {
-            return (
-              <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                <div className="text-yellow-800">
-                  <h3 className="text-lg font-medium mb-2">Unable to Display Detailed Evidence</h3>
-                  <p className="text-sm">
-                    The detailed evidence table is currently unavailable. The analysis data format may need to be updated.
-                    Please try running the analysis again or contact support if the issue persists.
-                  </p>
-                </div>
-              </div>
-            );
-          }
-          
-          return (
-            <div className="mt-6">
-              <ConnectionsDetailTable 
-                connectionsAnalysis={transformedData}
-                companyName={analysis?.job_analysis?.company}
-              />
-            </div>
-          );
-        })()}
 
         {/* Next Steps */}
         <div className="text-center">
@@ -704,10 +859,11 @@ const ContextStage: React.FC = () => {
                 <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <h3 className="text-lg font-medium mb-2">Ready to Continue!</h3>
+                <h3 className="text-lg font-medium mb-2">Context Complete!</h3>
                 <p className="text-sm mb-4">
-                  Your documents have been analyzed and we've identified key connections 
-                  between your background and the target role. Let's move to the Experience stage!
+                  Great! We've captured your background and skills from your resume. 
+                  Now let's move to the Experience stage where you'll upload job descriptions 
+                  to explore opportunities.
                 </p>
                 <button 
                   onClick={() => navigate('/experience')}
@@ -720,10 +876,10 @@ const ContextStage: React.FC = () => {
           ) : !hasRequiredDocuments() ? (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
               <div className="text-blue-800">
-                <h3 className="text-lg font-medium mb-2">Upload Required Documents</h3>
+                <h3 className="text-lg font-medium mb-2">Upload Your Resume</h3>
                 <p className="text-sm">
-                  Please upload both your resume and the target job description to continue 
-                  to the next stage of the Ignatian Pedagogical Paradigm.
+                  Please upload your resume to establish your personal context. 
+                  This is the foundation of your journey through the Ignatian Pedagogical Paradigm.
                 </p>
               </div>
             </div>

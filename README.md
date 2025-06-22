@@ -2,6 +2,13 @@
 
 A web application that transforms job listings and student resumes into meaningful portfolio project plans through the authentic integration of the Ignatian Pedagogical Paradigm (IPP) with advanced AI technology.
 
+## 📚 Documentation Structure
+
+- **[`CLAUDE.md`](./CLAUDE.md)** - Coding guidelines and conventions for AI assistants
+- **[`tasks.md`](./tasks.md)** - Technical implementation tracking and developer tasks  
+- **[`CHANGELOG.md`](./CHANGELOG.md)** - Version history and release notes
+- **[`docs/product/prd.md`](./docs/product/prd.md)** - Product requirements document
+
 ## 🎯 Project Overview
 
 The Ignatian AI Augmentation Agent guides students through a comprehensive five-stage journey—Context, Experience, Reflection, Action, and Evaluation—powered by sophisticated AI to create personalized portfolio projects that authentically align employer needs with Ignatian values and personal calling.

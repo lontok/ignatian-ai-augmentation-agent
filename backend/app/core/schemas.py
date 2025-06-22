@@ -107,6 +107,9 @@ class StartAnalysisRequest(BaseModel):
     resume_document_id: int
     job_document_id: int
 
+class StartResumeAnalysisRequest(BaseModel):
+    resume_document_id: int
+
 class StartAnalysisResponse(BaseModel):
     analysis_id: int
     message: str

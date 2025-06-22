@@ -5,6 +5,7 @@ import { ProtectedRoute } from './components/auth';
 import Header from './components/common/Header';
 import Dashboard from './pages/Dashboard';
 import SimpleLoggedIn from './pages/SimpleLoggedIn';
+import PathSelection from './pages/PathSelection';
 import ContextStage from './pages/context/ContextStage';
 import ExperienceStage from './pages/experience/ExperienceStage';
 import ReflectionStage from './pages/reflection/ReflectionStage';
@@ -33,6 +34,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Dashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/path-selection" 
+                element={
+                  <ProtectedRoute>
+                    <PathSelection />
                   </ProtectedRoute>
                 } 
               />

@@ -28,10 +28,10 @@ const Dashboard: React.FC = () => {
             Upload your resume and target job description to establish the foundation.
           </p>
           <button 
-            onClick={() => navigate('/context')}
+            onClick={() => navigate('/path-selection')}
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
           >
-            Start Context Stage
+            Start Your Journey
           </button>
         </div>
 

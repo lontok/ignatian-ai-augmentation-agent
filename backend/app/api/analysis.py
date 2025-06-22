@@ -4,7 +4,8 @@ from typing import List
 
 from database.connection import get_db
 from app.core.schemas import (
-    StartAnalysisRequest, 
+    StartAnalysisRequest,
+    StartResumeAnalysisRequest, 
     StartAnalysisResponse, 
     DocumentAnalysisResponse,
     MessageResponse
@@ -47,6 +48,39 @@ async def start_document_analysis(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to start analysis: {str(e)}"
+        )
+
+@router.post("/resume/start", response_model=StartAnalysisResponse)
+async def start_resume_analysis(
+    request: StartResumeAnalysisRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Start LLM analysis of resume only (for Context stage)
+    """
+    try:
+        analysis = await analysis_service.start_resume_analysis(
+            db=db,
+            user=current_user,
+            resume_document_id=request.resume_document_id
+        )
+        
+        return StartAnalysisResponse(
+            analysis_id=analysis.id,
+            message="Resume analysis started with enhanced Ignatian insights. This may take 30-60 seconds.",
+            status=analysis.status
+        )
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start resume analysis: {str(e)}"
         )
 
 @router.get("/{analysis_id}", response_model=DocumentAnalysisResponse)

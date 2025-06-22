@@ -207,6 +207,104 @@ class AnalysisService:
         return db.query(DocumentAnalysis).filter(
             DocumentAnalysis.user_id == user.id
         ).order_by(DocumentAnalysis.created_at.desc()).all()
+    
+    async def start_resume_analysis(
+        self, 
+        db: Session, 
+        user: User, 
+        resume_document_id: int
+    ) -> DocumentAnalysis:
+        """Start analysis of resume only (for Context stage)"""
+        
+        # Verify resume document exists and belongs to user
+        resume_doc = db.query(Document).filter(
+            Document.id == resume_document_id,
+            Document.user_id == user.id,
+            Document.document_type == "resume"
+        ).first()
+        
+        if not resume_doc:
+            raise ValueError("Resume document not found or doesn't belong to user")
+        
+        if not resume_doc.content_text:
+            raise ValueError("Resume text content not available")
+        
+        # Create analysis record with only resume
+        analysis = DocumentAnalysis(
+            user_id=user.id,
+            resume_document_id=resume_document_id,
+            job_document_id=None,  # No job document for resume-only analysis
+            status="pending"
+        )
+        db.add(analysis)
+        db.commit()
+        db.refresh(analysis)
+        
+        # Start asynchronous analysis
+        asyncio.create_task(self._perform_resume_only_analysis(
+            analysis_id=analysis.id,
+            resume_text=resume_doc.content_text
+        ))
+        
+        return analysis
+    
+    async def _perform_resume_only_analysis(self, analysis_id: int, resume_text: str):
+        """Perform resume-only LLM analysis with Ignatian focus"""
+        
+        # Get a new database session for the background task
+        from database.connection import get_db
+        db = next(get_db())
+        
+        try:
+            # Update status to processing
+            analysis = db.query(DocumentAnalysis).filter(DocumentAnalysis.id == analysis_id).first()
+            if not analysis:
+                return
+            
+            analysis.status = "processing"
+            analysis.progress_step = "initializing"
+            analysis.progress_message = "Starting enhanced Ignatian analysis of your resume..."
+            db.commit()
+            
+            # Add small delay to show initial progress
+            await asyncio.sleep(0.5)
+            
+            # Analyze resume with enhanced Ignatian prompts
+            logger.info(f"Analyzing resume with Ignatian focus for analysis {analysis_id}")
+            analysis.progress_step = "analyzing_resume"
+            analysis.progress_message = "Extracting skills, values, character strengths, and growth indicators from your resume..."
+            db.commit()
+            
+            resume_analysis = await llm_service.analyze_resume(resume_text)
+            
+            # Log to verify new fields are present
+            logger.info(f"Resume analysis keys: {resume_analysis.keys()}")
+            if 'character_strengths' in resume_analysis:
+                logger.info(f"Found character_strengths in analysis")
+            if 'values_indicators' in resume_analysis:
+                logger.info(f"Found values_indicators in analysis")
+            
+            analysis.resume_analysis = resume_analysis
+            analysis.status = "completed"
+            analysis.completed_at = datetime.utcnow()
+            analysis.progress_step = "completed"
+            analysis.progress_message = "Resume analysis complete with Ignatian insights!"
+            db.commit()
+            
+            logger.info(f"Resume-only analysis {analysis_id} completed successfully")
+            
+        except Exception as e:
+            logger.error(f"Resume analysis {analysis_id} failed: {str(e)}", exc_info=True)
+            analysis = db.query(DocumentAnalysis).filter(DocumentAnalysis.id == analysis_id).first()
+            if analysis:
+                analysis.status = "failed"
+                analysis.error_message = str(e)
+                analysis.progress_step = "failed"
+                analysis.progress_message = f"Analysis failed: {str(e)}"
+                db.commit()
+        
+        finally:
+            db.close()
 
 # Global instance
 analysis_service = AnalysisService()

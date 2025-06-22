@@ -1,4 +1,5 @@
 import openai
+import logging
 from typing import Dict, Any, Optional
 from sqlalchemy.orm import Session
 
@@ -6,36 +7,121 @@ from config.settings import settings
 from app.models.document import Document
 from app.models.user import User
 
+logger = logging.getLogger(__name__)
+
 class LLMService:
     def __init__(self):
         self.client = openai.OpenAI(api_key=settings.openai_api_key)
         self.model = "gpt-4o-mini"  # Using the latest efficient model
     
     async def analyze_resume(self, resume_text: str) -> Dict[str, Any]:
-        """Analyze resume and extract key information"""
+        """Analyze resume and extract key information with Ignatian pedagogical focus"""
         
         prompt = """
-        Analyze the following resume and extract key information. Return a structured analysis in JSON format with these sections:
+        TASK: Analyze the following resume using chain-of-thought reasoning and the Ignatian principle of understanding CONTEXT.
 
-        1. personal_info: Basic information (name, contact details if present)
-        2. skills: List of technical and soft skills mentioned
-        3. experience: Work experience with key responsibilities and achievements
-        4. education: Educational background
-        5. projects: Notable projects or accomplishments
-        6. strengths: Top 3-5 key strengths based on the content
-        7. career_level: Estimate career level (entry-level, mid-level, senior, executive)
-        8. industries: Industries or domains of experience
+        REASONING PROCESS:
+        1. First, read through the entire resume to understand the person's journey
+        2. Identify patterns in their experiences that reveal character and values
+        3. Extract technical competencies while noting how they serve others
+        4. Assess career trajectory and growth mindset indicators
+        5. Consider how their background connects to Ignatian values
 
-        Resume text:
+        EXAMPLE ANALYSIS (Few-Shot Learning):
+        For a resume showing: Marketing internship + Finance club + Volunteer tutoring + Spanish fluency
+
+        Step 1 - Journey Pattern: Shows progression from academic learning to practical application
+        Step 2 - Character Indicators: Chooses service activities alongside career development  
+        Step 3 - Technical Skills: Marketing analytics, financial modeling, bilingual communication
+        Step 4 - Growth Mindset: Seeks diverse experiences, takes on leadership roles
+        Step 5 - Ignatian Alignment: Service orientation through tutoring, cultural bridge-building
+
+        OUTPUT SCHEMA (JSON):
+        {{
+          "personal_info": {{
+            "name": "extracted or 'Not provided'",
+            "contact_details": "summary of available contact info",
+            "location": "city/state if mentioned"
+          }},
+          "skills": {{
+            "technical": ["list of technical skills"],
+            "soft": ["list of soft skills with evidence"]
+          }},
+          "experience": [
+            {{
+              "role": "position title",
+              "organization": "company name",
+              "duration": "time period",
+              "key_achievements": ["achievement 1", "achievement 2"],
+              "service_impact": "how this role served others or created value"
+            }}
+          ],
+          "education": {{
+            "degree": "degree type and field",
+            "institution": "school name",
+            "achievements": ["relevant achievements"],
+            "extracurricular": ["activities showing character/values"]
+          }},
+          "projects": [
+            {{
+              "title": "project name",
+              "description": "what they accomplished",
+              "impact": "value created or problem solved"
+            }}
+          ],
+          "strengths": [
+            {{
+              "strength": "key strength",
+              "evidence": "specific example",
+              "workplace_value": "how this benefits employers"
+            }}
+          ],
+          "career_level": "entry-level/mid-level/senior/executive",
+          "industries": ["relevant industries/domains"],
+          "character_strengths": [
+            {{
+              "strength": "identified character trait",
+              "evidence": "specific examples",
+              "ignatian_dimension": "service/excellence/growth/collaboration"
+            }}
+          ],
+          "values_indicators": {{
+            "service_orientation": ["examples of serving others/community"],
+            "collaboration": ["evidence of teamwork"],
+            "continuous_learning": ["examples of seeking growth"],
+            "excellence_pursuit": ["evidence of striving for quality"]
+          }},
+          "growth_mindset": {{
+            "indicators": ["specific examples of learning from challenges"],
+            "development_areas": ["areas they're actively improving"],
+            "readiness_for_growth": "assessment of openness to new challenges"
+          }}
+        }}
+
+        NOW ANALYZE THIS RESUME:
         {resume_text}
 
-        Provide a comprehensive but concise analysis focused on professional capabilities.
+        Apply the reasoning process step-by-step, then provide the complete JSON analysis following the schema above.
+        Focus on understanding this person's unique journey and how their experiences reflect values of service, growth, and authentic development.
         Return ONLY valid JSON without any markdown formatting or additional text.
         """
         
+        # Log that we're using the enhanced Ignatian prompt
+        logger.info("Using enhanced Ignatian resume analysis prompt with chain-of-thought reasoning")
+        logger.debug(f"Prompt includes: character_strengths, values_indicators, growth_mindset fields")
+        
         try:
             response = await self._call_openai(prompt.format(resume_text=resume_text))
-            return self._parse_json_response(response)
+            result = self._parse_json_response(response)
+            
+            # Log what fields were returned
+            logger.info(f"Resume analysis returned fields: {list(result.keys())}")
+            if 'character_strengths' in result:
+                logger.info(f"Character strengths found: {len(result.get('character_strengths', []))}")
+            if 'values_indicators' in result:
+                logger.info(f"Values indicators found: {result.get('values_indicators', {}).keys()}")
+            
+            return result
         except Exception as e:
             print(f"Error analyzing resume: {str(e)}")
             return {"error": "Failed to analyze resume", "details": str(e)}
@@ -271,7 +357,16 @@ class LLMService:
                 messages=[
                     {
                         "role": "system", 
-                        "content": "You are an expert career counselor and educator trained in the Ignatian Pedagogical Paradigm. You help students discover authentic connections between their background and career aspirations, focusing on growth, reflection, and purposeful action. When asked to provide JSON output, always return valid JSON without any additional text, markdown formatting, or code blocks."
+                        "content": """You are Dr. Elena Rodriguez, an expert career counselor and educator with 15 years of experience in the Ignatian Pedagogical Paradigm (IPP). You specialize in helping students discover authentic connections between their background and career aspirations.
+
+Your approach integrates:
+- Cura Personalis (care for the whole person)
+- Magis (excellence and continuous improvement)
+- Service to Others (working for the common good)
+- Discernment (thoughtful decision-making guided by values)
+- Formation (holistic development of mind, heart, and spirit)
+
+You focus on understanding each person's unique journey, identifying how their experiences reflect values of service, growth, and authentic development. When asked to provide JSON output, always return valid JSON without any additional text, markdown formatting, or code blocks."""
                     },
                     {"role": "user", "content": prompt}
                 ],
