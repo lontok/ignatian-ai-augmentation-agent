@@ -8,10 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- 
+- Single file upload for Interview Prep Mode in Experience Stage
+- Job upload UI when no job analysis exists yet
+- Progress tracking during job analysis with polling mechanism
+- Mode-specific UI with Interview Prep badge in Experience Stage
 
 ### Changed
-- 
+- Updated DocumentAnalysisResponse schema to include resume_document_id and job_document_id
+- Experience Stage now conditionally shows job upload or experience selection based on analysis state
 
 ### Fixed
 - 

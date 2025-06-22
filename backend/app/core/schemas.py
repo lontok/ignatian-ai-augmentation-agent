@@ -87,6 +87,8 @@ class AnalysisStatusEnum(str, Enum):
 class DocumentAnalysisResponse(BaseModel):
     id: int
     status: AnalysisStatusEnum
+    resume_document_id: Optional[int] = None
+    job_document_id: Optional[int] = None
     resume_analysis: Optional[dict] = None
     job_analysis: Optional[dict] = None
     connections_analysis: Optional[dict] = None
@@ -109,6 +111,10 @@ class StartAnalysisRequest(BaseModel):
 
 class StartResumeAnalysisRequest(BaseModel):
     resume_document_id: int
+
+class StartJobAnalysisRequest(BaseModel):
+    existing_analysis_id: int
+    job_document_id: int
 
 class StartAnalysisResponse(BaseModel):
     analysis_id: int

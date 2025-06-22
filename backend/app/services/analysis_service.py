@@ -305,6 +305,157 @@ class AnalysisService:
         
         finally:
             db.close()
+    
+    async def start_job_analysis(
+        self,
+        db: Session,
+        user: User,
+        existing_analysis_id: int,
+        job_document_id: int
+    ) -> DocumentAnalysis:
+        """Start job analysis using existing resume analysis"""
+        
+        # Get existing analysis
+        existing_analysis = db.query(DocumentAnalysis).filter(
+            DocumentAnalysis.id == existing_analysis_id,
+            DocumentAnalysis.user_id == user.id
+        ).first()
+        
+        if not existing_analysis:
+            raise ValueError("Existing analysis not found")
+        
+        if not existing_analysis.resume_analysis:
+            raise ValueError("Existing analysis does not have resume data")
+        
+        # Verify job document exists and belongs to user
+        job_doc = db.query(Document).filter(
+            Document.id == job_document_id,
+            Document.user_id == user.id,
+            Document.document_type == "job_description"
+        ).first()
+        
+        if not job_doc:
+            raise ValueError("Job document not found or doesn't belong to user")
+        
+        if not job_doc.content_text:
+            raise ValueError("Job document text content not available")
+        
+        # Update the existing analysis with job document
+        existing_analysis.job_document_id = job_document_id
+        existing_analysis.status = "pending"
+        existing_analysis.progress_step = "initializing"
+        existing_analysis.progress_message = "Starting job analysis..."
+        db.commit()
+        
+        # Start async job analysis
+        asyncio.create_task(self._perform_job_analysis(
+            analysis_id=existing_analysis.id,
+            resume_analysis=existing_analysis.resume_analysis,
+            job_text=job_doc.content_text
+        ))
+        
+        return existing_analysis
+    
+    async def _perform_job_analysis(self, analysis_id: int, resume_analysis: dict, job_text: str):
+        """Perform job analysis and matching with existing resume data"""
+        
+        # Get a new database session for the background task
+        from database.connection import get_db
+        db = next(get_db())
+        
+        try:
+            # Update status to processing
+            analysis = db.query(DocumentAnalysis).filter(DocumentAnalysis.id == analysis_id).first()
+            if not analysis:
+                return
+            
+            analysis.status = "processing"
+            analysis.progress_step = "analyzing_job"
+            analysis.progress_message = "Analyzing the job description to understand requirements..."
+            db.commit()
+            
+            # Analyze job description
+            logger.info(f"Analyzing job description for analysis {analysis_id}")
+            job_analysis = await llm_service.analyze_job_description(job_text)
+            
+            analysis.job_analysis = job_analysis
+            db.commit()
+            
+            await asyncio.sleep(0.3)
+            
+            # Find connections using existing resume analysis
+            logger.info(f"Finding connections for analysis {analysis_id}")
+            analysis.progress_step = "finding_connections"
+            analysis.progress_message = "Identifying connections between your background and the job..."
+            db.commit()
+            
+            connections = await llm_service.find_connections(resume_analysis, job_analysis)
+            
+            await asyncio.sleep(0.3)
+            
+            # Extract detailed evidence
+            logger.info(f"Extracting detailed evidence for analysis {analysis_id}")
+            analysis.progress_step = "extracting_evidence"
+            analysis.progress_message = "Finding specific evidence from your experience..."
+            db.commit()
+            
+            # Get resume text for evidence extraction
+            resume_doc = db.query(Document).filter(
+                Document.id == analysis.resume_document_id
+            ).first()
+            
+            if resume_doc and resume_doc.content_text:
+                detailed_evidence = await llm_service.extract_detailed_evidence(
+                    resume_doc.content_text, job_text
+                )
+                
+                if detailed_evidence and "skill_alignment" in detailed_evidence:
+                    connections["skill_alignment"] = detailed_evidence["skill_alignment"]
+            
+            analysis.connections_analysis = connections
+            db.commit()
+            
+            await asyncio.sleep(0.3)
+            
+            # Generate summary
+            logger.info(f"Generating summary for analysis {analysis_id}")
+            analysis.progress_step = "generating_summary"
+            analysis.progress_message = "Creating your personalized insights..."
+            db.commit()
+            
+            summary_result = await llm_service.generate_context_summary(
+                resume_analysis, job_analysis, connections
+            )
+            
+            if "context_summary" in summary_result:
+                analysis.context_summary = summary_result["context_summary"]
+            if "role_fit_narrative" in summary_result:
+                analysis.role_fit_narrative = summary_result["role_fit_narrative"]
+            if "strengths" in summary_result:
+                analysis.strengths = summary_result["strengths"]
+            if "gaps" in summary_result:
+                analysis.gaps = summary_result["gaps"]
+            
+            analysis.status = "completed"
+            analysis.completed_at = datetime.utcnow()
+            analysis.progress_step = "completed"
+            analysis.progress_message = "Analysis complete!"
+            db.commit()
+            
+            logger.info(f"Job analysis {analysis_id} completed successfully")
+            
+        except Exception as e:
+            logger.error(f"Job analysis {analysis_id} failed: {str(e)}", exc_info=True)
+            analysis = db.query(DocumentAnalysis).filter(DocumentAnalysis.id == analysis_id).first()
+            if analysis:
+                analysis.status = "failed"
+                analysis.error_message = str(e)
+                analysis.progress_step = "failed"
+                analysis.progress_message = f"Analysis failed: {str(e)}"
+                db.commit()
+        
+        finally:
+            db.close()
 
 # Global instance
 analysis_service = AnalysisService()

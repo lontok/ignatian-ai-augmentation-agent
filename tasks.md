@@ -59,11 +59,11 @@ File: `/backend/app/services/llm_service.py:14-111`
 - [ ] Create values inventory UI component
 - [ ] Add validation for Ignatian fields
 
-### Stage 2: Experience (Job Upload) - 0% Complete
+### Stage 2: Experience (Job Upload) - 25% Complete
 
 #### Requirements
 - [ ] Multi-file upload component (3-5 files for Exploration Mode)
-- [ ] Single file upload (Interview Prep Mode)
+- [x] Single file upload (Interview Prep Mode)
 - [ ] Job parsing service enhancement
 - [ ] Overlap analysis algorithm implementation
 - [ ] D3.js Venn diagram visualization
@@ -71,7 +71,11 @@ File: `/backend/app/services/llm_service.py:14-111`
 - [ ] Strategic recommendations panel
 
 #### Technical Tasks
-- [ ] Create `MultiFileUpload.tsx` component
+- [x] Add job upload UI to Experience Stage for Interview Prep Mode
+- [x] Integrate with existing `/api/analysis/start` endpoint for job analysis
+- [x] Handle polling for analysis completion
+- [x] Update schemas to include document IDs in analysis response
+- [ ] Create `MultiFileUpload.tsx` component for Exploration Mode
 - [ ] Implement `/api/jobs/multi-upload` endpoint
 - [ ] Create overlap analysis service
 - [ ] Add D3.js dependency and setup
@@ -185,6 +189,15 @@ GET /api/jobs/overlap-analysis/{job_ids}
 - Lodash for overlap analysis utilities
 
 ## 🔄 Recently Completed (Last 7 Days)
+
+### 2025-06-22
+- [x] Implement single file upload for Interview Prep Mode in Experience Stage:
+  - Added job upload UI when no job analysis exists
+  - Integrated with existing `/api/analysis/start` endpoint
+  - Added progress tracking during job analysis
+  - Updated DocumentAnalysisResponse schema to include document IDs
+  - Created handleJobUploadSuccess and pollAnalysisStatus functions
+  - Added mode-specific UI with Interview Prep badge
 
 ### 2025-06-21
 - [x] Implement Path Selection Screen

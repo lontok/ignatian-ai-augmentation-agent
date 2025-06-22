@@ -1,5 +1,45 @@
 # Development Notes
 
+## 2025-06-22 Development Update
+
+**Changes Made**: Implemented single file upload for Interview Prep Mode in Experience Stage
+
+**Files Modified**: 
+- `/frontend/src/pages/experience/ExperienceStage.tsx` - Added job upload UI and logic
+- `/backend/app/core/schemas.py` - Added document IDs to DocumentAnalysisResponse
+- `/tasks.md` - Updated Stage 2 progress to 25%
+- `/CHANGELOG.md` - Added unreleased changes
+
+**Key Features Implemented**:
+1. Added conditional job upload UI for Interview Prep Mode when:
+   - User is in Interview Prep path (from sessionStorage)
+   - Resume analysis is complete but no job analysis exists
+2. Integrated DocumentUpload component for job description upload
+3. Added job analysis polling mechanism:
+   - Starts analysis using existing `/api/analysis/start` endpoint
+   - Polls every 2 seconds for completion
+   - Shows AnalysisProgress component during processing
+4. Updated backend schema to include resume_document_id and job_document_id in responses
+5. Added Interview Prep Mode badge and upload tips
+
+**Technical Details**:
+- Uses existing DocumentUpload component with `job_description` type
+- Retrieves resume_document_id from previous analysis
+- Handles error states and success messages
+- Cleans up polling interval on component unmount
+
+**Documentation Needed**: 
+- Update PRD to reflect Experience Stage job upload flow for Interview Prep Mode
+- Document the conditional UI behavior based on analysis state
+
+**Testing**: 
+- Manual testing needed for Interview Prep job upload flow
+- Verify transition from upload to experience selection after analysis
+
+**Status**: Ready for documentation review and testing
+
+---
+
 ## 2025-06-21 Development Update - Part 2
 
 **Changes Made**: Added re-analyze functionality and frontend support for Ignatian fields

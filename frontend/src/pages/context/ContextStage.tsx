@@ -430,8 +430,8 @@ const ContextStage: React.FC = () => {
                   Upload different resume
                 </button>
                 
-                {/* Re-analyze button */}
-                {resumeAnalysis?.status === 'completed' && (
+                {/* Analyze/Re-analyze button */}
+                {(!resumeAnalysis || resumeAnalysis?.status === 'completed') && (
                   <div className="mt-4">
                     <div className="border-t pt-4">
                       <button
@@ -439,11 +439,16 @@ const ContextStage: React.FC = () => {
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400"
                         disabled={analysisLoading}
                       >
-                        {analysisLoading ? 'Re-analyzing...' : 'Re-analyze with Enhanced Insights'}
+                        {analysisLoading ? 
+                          (resumeAnalysis?.status === 'completed' ? 'Re-analyzing...' : 'Analyzing...') : 
+                          (resumeAnalysis?.status === 'completed' ? 'Re-analyze' : 'Analyze')
+                        }
                       </button>
-                      <p className="mt-2 text-xs text-gray-500">
-                        Get deeper Ignatian pedagogical insights from your resume
-                      </p>
+                      {!resumeAnalysis && (
+                        <p className="mt-2 text-xs text-gray-500">
+                          Analyze your resume to extract skills and insights
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}

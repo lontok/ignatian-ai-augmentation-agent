@@ -5,7 +5,8 @@ from typing import List
 from database.connection import get_db
 from app.core.schemas import (
     StartAnalysisRequest,
-    StartResumeAnalysisRequest, 
+    StartResumeAnalysisRequest,
+    StartJobAnalysisRequest,
     StartAnalysisResponse, 
     DocumentAnalysisResponse,
     MessageResponse
@@ -81,6 +82,40 @@ async def start_resume_analysis(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to start resume analysis: {str(e)}"
+        )
+
+@router.post("/job/start", response_model=StartAnalysisResponse)
+async def start_job_analysis(
+    request: StartJobAnalysisRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Start LLM analysis of job description and match with existing resume (for Experience stage)
+    """
+    try:
+        analysis = await analysis_service.start_job_analysis(
+            db=db,
+            user=current_user,
+            existing_analysis_id=request.existing_analysis_id,
+            job_document_id=request.job_document_id
+        )
+        
+        return StartAnalysisResponse(
+            analysis_id=analysis.id,
+            message="Job analysis and matching started. This may take 30-45 seconds.",
+            status=analysis.status
+        )
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start job analysis: {str(e)}"
         )
 
 @router.get("/{analysis_id}", response_model=DocumentAnalysisResponse)

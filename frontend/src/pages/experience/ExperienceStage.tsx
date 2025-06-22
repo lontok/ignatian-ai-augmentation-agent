@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import DocumentUpload from '../../components/documents/DocumentUpload';
+import AnalysisProgress from '../../components/AnalysisProgress';
 
 interface Document {
   id: number;
@@ -15,6 +17,8 @@ interface Document {
 interface AnalysisResult {
   id: number;
   status: 'pending' | 'processing' | 'completed' | 'failed';
+  resume_document_id?: number;
+  job_document_id?: number;
   resume_analysis?: any;
   job_analysis?: any;
   connections_analysis?: any;
@@ -44,10 +48,28 @@ const ExperienceStage: React.FC = () => {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [elaborations, setElaborations] = useState<Record<string, string>>({});
   const [currentElaboration, setCurrentElaboration] = useState<string | null>(null);
+  const [jobDocument, setJobDocument] = useState<Document | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+  
+  // Get the selected path from sessionStorage
+  const selectedPath = sessionStorage.getItem('selectedPath') || 'exploration';
+  const isInterviewPrep = selectedPath === 'interview';
 
   useEffect(() => {
     loadLatestAnalysis();
   }, []);
+
+  useEffect(() => {
+    // Clear polling interval on component unmount
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [pollingInterval]);
 
   const loadLatestAnalysis = async () => {
     if (!token) return;
@@ -58,21 +80,41 @@ const ExperienceStage: React.FC = () => {
           'Authorization': `Bearer ${token}`,
         },
       });
-
+      
       if (response.ok) {
         const analysisData = await response.json();
         setAnalysis(analysisData);
         
-        if (analysisData.status === 'completed') {
-          processAnalysisForExperiences(analysisData);
+        // For Interview Prep mode, we want to show the job upload UI
+        // regardless of whether there's an old analysis with job data
+        if (isInterviewPrep) {
+          // Don't process old analyses in Interview Prep mode
+          // User should upload a new job description
+          setAnalysis(analysisData); // Keep the analysis for resume_document_id
+        } else if (analysisData.status === 'completed' && analysisData.job_analysis) {
+          try {
+            processAnalysisForExperiences(analysisData);
+          } catch (error) {
+            console.error('Error processing experiences:', error);
+          }
         }
       } else {
-        // No analysis found, redirect back to context
-        window.location.href = '/context';
+        // If no analysis found and in Interview Prep mode, check if we at least have a resume
+        if (isInterviewPrep) {
+          // Don't redirect immediately - let the UI handle showing upload interface
+          setAnalysis(null);
+        } else {
+          // For exploration mode, we need analysis before proceeding
+          window.location.href = '/context';
+        }
       }
     } catch (error) {
       console.error('Failed to load analysis:', error);
-      window.location.href = '/context';
+      if (isInterviewPrep) {
+        setAnalysis(null);
+      } else {
+        window.location.href = '/context';
+      }
     } finally {
       setLoading(false);
     }
@@ -83,7 +125,12 @@ const ExperienceStage: React.FC = () => {
     
     // Extract items from resume analysis
     if (analysisData.resume_analysis?.skills) {
-      analysisData.resume_analysis.skills.forEach((skill: any, index: number) => {
+      // Handle both array and object formats for skills
+      const skillsArray = Array.isArray(analysisData.resume_analysis.skills) 
+        ? analysisData.resume_analysis.skills 
+        : (analysisData.resume_analysis.skills.technical || []).concat(analysisData.resume_analysis.skills.soft || []);
+      
+      skillsArray.forEach((skill: any, index: number) => {
         items.push({
           id: `resume-skill-${index}`,
           type: 'skill',
@@ -96,8 +143,12 @@ const ExperienceStage: React.FC = () => {
       });
     }
 
-    if (analysisData.resume_analysis?.experiences) {
-      analysisData.resume_analysis.experiences.forEach((exp: any, index: number) => {
+    if (analysisData.resume_analysis?.experience) {
+      const experienceArray = Array.isArray(analysisData.resume_analysis.experience) 
+        ? analysisData.resume_analysis.experience 
+        : [];
+      
+      experienceArray.forEach((exp: any, index: number) => {
         items.push({
           id: `resume-exp-${index}`,
           type: 'experience',
@@ -201,6 +252,128 @@ const ExperienceStage: React.FC = () => {
     return selectedItems.size >= 3; // Require at least 3 selected items
   };
 
+
+  const handleJobUploadSuccess = async (document: Document) => {
+    setJobDocument(document);
+    setUploadSuccess('Job description uploaded successfully!');
+    setUploadError(null);
+    
+    // Start analysis with the job document
+    await startJobAnalysis(document.id);
+  };
+
+  const handleJobUploadError = (error: string) => {
+    setUploadError(error);
+    setUploadSuccess(null);
+  };
+
+  const startJobAnalysis = async (jobDocumentId: number) => {
+    if (!token) return;
+
+    setAnalysisLoading(true);
+    setUploadError(null);
+
+    try {
+      let existingAnalysisId: number | undefined;
+      
+      // Try to get existing analysis ID
+      if (analysis && analysis.id) {
+        existingAnalysisId = analysis.id;
+      } else {
+        // If no analysis loaded, fetch the latest one
+        const latestResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000/api'}/analysis/latest/status`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        if (latestResponse.ok) {
+          const latestAnalysis = await latestResponse.json();
+          if (latestAnalysis && latestAnalysis.id) {
+            existingAnalysisId = latestAnalysis.id;
+            setAnalysis(latestAnalysis);
+          }
+        }
+      }
+      
+      if (!existingAnalysisId) {
+        setUploadError('No resume analysis found. Please complete the Context stage first.');
+        setAnalysisLoading(false);
+        return;
+      }
+      
+      // Use the new job-only analysis endpoint
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000/api'}/analysis/job/start`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          existing_analysis_id: existingAnalysisId,
+          job_document_id: jobDocumentId,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        // Start polling for results
+        pollAnalysisStatus(result.analysis_id);
+      } else {
+        const error = await response.json();
+        setUploadError(error.detail || 'Failed to start analysis');
+        setAnalysisLoading(false);
+      }
+    } catch (error) {
+      console.error('Failed to start job analysis:', error);
+      setUploadError('Failed to start analysis. Please try again.');
+      setAnalysisLoading(false);
+    }
+  };
+
+  const pollAnalysisStatus = (analysisId: number) => {
+    const interval = setInterval(async () => {
+      if (!token) {
+        clearInterval(interval);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_API_URL || 'http://localhost:8000/api'}/analysis/${analysisId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const analysisData = await response.json();
+          
+          if (analysisData.status === 'completed') {
+            clearInterval(interval);
+            setAnalysisLoading(false);
+            setAnalysis(analysisData);
+            processAnalysisForExperiences(analysisData);
+          } else if (analysisData.status === 'failed') {
+            clearInterval(interval);
+            setAnalysisLoading(false);
+            setUploadError(analysisData.error_message || 'Analysis failed');
+          }
+          // Update progress message if available
+          else if (analysisData.progress_message) {
+            // Could show progress here if needed
+          }
+        }
+      } catch (error) {
+        console.error('Failed to poll analysis status:', error);
+      }
+    }, 2000); // Poll every 2 seconds
+
+    setPollingInterval(interval);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -212,7 +385,9 @@ const ExperienceStage: React.FC = () => {
     );
   }
 
-  if (!analysis || analysis.status !== 'completed') {
+  // Only show this error state for Exploration mode
+  // Interview Prep mode will show the upload UI instead
+  if (!isInterviewPrep && (!analysis || analysis.status !== 'completed')) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -234,6 +409,126 @@ const ExperienceStage: React.FC = () => {
     );
   }
 
+  // Show job upload UI if in Interview Prep mode and no job analysis yet
+  if (isInterviewPrep && (!analysis || !analysis.job_analysis || analysisLoading)) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+              Experience Stage - Interview Prep Mode
+            </h1>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-6">
+              Now let's analyze the specific job you're preparing for. Upload the job description 
+              to discover connections between your background and this opportunity.
+            </p>
+          </div>
+
+          {/* Progress Indicator */}
+          <div className="mb-8">
+            <div className="flex items-center justify-center space-x-4">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                  ✓
+                </div>
+                <span className="ml-2 text-sm font-medium text-green-600">Context</span>
+              </div>
+              <div className="w-16 h-1 bg-green-600"></div>
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                  2
+                </div>
+                <span className="ml-2 text-sm font-medium text-blue-600">Experience</span>
+              </div>
+              <div className="w-16 h-1 bg-gray-200"></div>
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-gray-200 text-gray-400 rounded-full flex items-center justify-center text-sm font-medium">
+                  3
+                </div>
+                <span className="ml-2 text-sm text-gray-400">Reflection</span>
+              </div>
+              <div className="w-16 h-1 bg-gray-200"></div>
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-gray-200 text-gray-400 rounded-full flex items-center justify-center text-sm font-medium">
+                  4
+                </div>
+                <span className="ml-2 text-sm text-gray-400">Action</span>
+              </div>
+              <div className="w-16 h-1 bg-gray-200"></div>
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-gray-200 text-gray-400 rounded-full flex items-center justify-center text-sm font-medium">
+                  5
+                </div>
+                <span className="ml-2 text-sm text-gray-400">Evaluation</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mode Badge */}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              Interview Prep Mode
+            </div>
+          </div>
+
+          {/* Upload Section */}
+          <div className="max-w-2xl mx-auto">
+            {uploadError && (
+              <div className="mb-4 bg-red-50 border border-red-200 rounded-md p-4">
+                <div className="flex">
+                  <svg className="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="ml-3 text-sm text-red-800">{uploadError}</p>
+                </div>
+              </div>
+            )}
+
+            {uploadSuccess && (
+              <div className="mb-4 bg-green-50 border border-green-200 rounded-md p-4">
+                <div className="flex">
+                  <svg className="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="ml-3 text-sm text-green-800">{uploadSuccess}</p>
+                </div>
+              </div>
+            )}
+
+            {analysisLoading ? (
+              <div className="bg-white rounded-lg shadow-sm border p-8">
+                <AnalysisProgress status="processing" />
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow-sm border p-8">
+                <DocumentUpload
+                  documentType="job_description"
+                  onUploadSuccess={handleJobUploadSuccess}
+                  onUploadError={handleJobUploadError}
+                />
+              </div>
+            )}
+
+            {/* Tips */}
+            <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <h3 className="text-sm font-medium text-blue-900 mb-2">Tips for Job Description Upload</h3>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• Include the full job posting with all requirements and responsibilities</li>
+                <li>• Make sure to include any "nice to have" or preferred qualifications</li>
+                <li>• Company culture or values sections help us provide better recommendations</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Default experience selection UI
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -289,10 +584,10 @@ const ExperienceStage: React.FC = () => {
         </div>
 
         {/* Context Summary from Previous Stage */}
-        {analysis.context_summary && (
+        {analysis?.context_summary && (
           <div className="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
             <h3 className="text-lg font-medium text-blue-900 mb-3">Context Analysis Summary</h3>
-            <p className="text-blue-800 whitespace-pre-wrap">{analysis.context_summary}</p>
+            <p className="text-blue-800 whitespace-pre-wrap">{analysis?.context_summary}</p>
           </div>
         )}
 
