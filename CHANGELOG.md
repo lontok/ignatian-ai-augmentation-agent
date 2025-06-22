@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- 
+
+### Changed
+- 
+
+### Fixed
+- 
+
+### Removed
+- 
+
+## [0.2.0] - 2025-06-21
+
+### Added
 - Re-analyze button in Context Stage for existing resumes
 - Support for displaying enhanced Ignatian analysis fields in the frontend
 - Backend resume-only analysis endpoint `/api/analysis/resume/start`
@@ -22,10 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced display of experience and education with service impact indicators
 
 ### Fixed
-- 
-
-### Removed
-- 
+- TypeScript type errors when rendering new Ignatian field structures
+- Frontend now properly uses resume-only endpoint instead of full analysis endpoint
 
 ## [0.1.0] - 2025-06-21
 
