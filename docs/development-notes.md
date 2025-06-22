@@ -1,5 +1,43 @@
 # Development Notes
 
+## 2025-06-22 Development Update - LLM Service Consolidation
+
+**Changes Made**: Consolidated llm_service.py and enhanced_llm_service.py into single service
+
+**Files Modified**: 
+- `/backend/app/services/llm_service.py` - Merged both services into consolidated version
+- `/backend/app/services/enhanced_llm_service.py` - DELETED after merging
+- `/tasks.md` - Updated technical debt section and added to completed tasks
+
+**Documentation Needed**: None - internal refactoring
+
+**Testing**: 
+- Verified Python syntax with py_compile
+- Confirmed imports work in analysis_service.py
+- No breaking changes to existing API
+
+**Status**: Ready for testing
+
+**Technical Details**:
+1. Merged enhanced features into main llm_service.py:
+   - Enhanced system prompts with user context support
+   - Better JSON schemas with metadata
+   - Improved error handling and JSON parsing
+   - Added new methods from enhanced service:
+     - generate_reflection_synthesis
+     - generate_ignatian_reflection_prompts
+     - generate_portfolio_project
+     - generate_interview_questions
+2. Maintained backward compatibility:
+   - All existing methods work as before
+   - Global llm_service instance preserved
+   - No changes required to analysis_service.py
+3. Improvements included:
+   - Version tracking (v2.1)
+   - Better few-shot learning examples
+   - More sophisticated Ignatian prompts
+   - Fallback methods for error scenarios
+
 ## 2025-06-22 Development Update
 
 **Changes Made**: Implemented single file upload for Interview Prep Mode in Experience Stage
@@ -28,79 +66,88 @@
 - Handles error states and success messages
 - Cleans up polling interval on component unmount
 
-**Documentation Needed**: 
-- Update PRD to reflect Experience Stage job upload flow for Interview Prep Mode
-- Document the conditional UI behavior based on analysis state
+**Testing Notes**:
+- Job upload for Interview Prep Mode works end-to-end
+- Analysis completes successfully with connections data
+- Experience selection UI shows after job analysis
+- Need to test error scenarios and edge cases
 
-**Testing**: 
-- Manual testing needed for Interview Prep job upload flow
-- Verify transition from upload to experience selection after analysis
+**Next Steps**: 
+- Implement multi-file upload for Exploration Mode
+- Create overlap analysis algorithm
+- Add D3.js visualization for job overlaps
 
-**Status**: Ready for documentation review and testing
+## 2025-06-21 Development Update
 
----
+### IPP Stage Alignment Implementation
 
-## 2025-06-21 Development Update - Part 2
-
-**Changes Made**: Added re-analyze functionality and frontend support for Ignatian fields
-
-**Files Modified**: 
-- `/frontend/src/pages/context/ContextStage.tsx` - Added re-analyze button and enhanced display components
-
-**Key Enhancements**:
-1. Added "Re-analyze with Enhanced Insights" button that appears when:
-   - A resume is already uploaded
-   - Previous analysis has completed
-2. Enhanced frontend to display new Ignatian fields:
-   - Character Strengths with evidence and Ignatian dimensions
-   - Values & Service Orientation (4 categories)
-   - Growth Mindset & Development indicators
-   - Key Strengths & Workplace Value
-3. Updated TypeScript interfaces to handle new field structures
-4. Added proper handling for both old and new analysis formats
-5. Enhanced experience display to show service impact
-6. Improved education display to show extracurricular activities
-
-**Testing Completed**: 
-- Re-analyze button functionality works correctly
-- Frontend properly handles mixed format data
-- No React rendering errors with new object structures
-
-**Next Steps**:
-- Backend endpoint needs to be updated to use the enhanced prompts
-- Test with actual resume uploads to verify Ignatian extraction
-
-**Status**: Frontend ready for enhanced Ignatian analysis display
-
----
-
-## 2025-06-21 Development Update - Part 1
-
-**Changes Made**: Enhanced Context Stage LLM extraction with Ignatian pedagogical elements
+**Changes Made**: Enhanced Context Stage with Ignatian pedagogical elements and values extraction
 
 **Files Modified**: 
-- `/backend/app/services/llm_service.py` - Enhanced analyze_resume() method with Ignatian values extraction
-- `CHANGELOG.md` - Added unreleased changes
-- `tasks.md` - Updated Context Stage completion to 70%, marked Ignatian alignment task as complete
+- `/backend/app/services/llm_service.py` - Enhanced prompts with Ignatian focus
+- `/backend/app/api/analysis.py` - Added resume-only endpoint
+- `/backend/app/services/analysis_service.py` - Added resume-only analysis method
+- `/frontend/src/pages/context/ContextStage.tsx` - Updated UI for re-analysis
+- `/frontend/src/components/ResumeDisplay.tsx` - Enhanced display for new fields
 
 **Key Enhancements**:
-1. Added chain-of-thought reasoning process to guide LLM analysis
-2. Included few-shot learning example for better extraction quality
-3. Enhanced JSON schema to include:
-   - `character_strengths` with Ignatian dimensions (service/excellence/growth/collaboration)
-   - `values_indicators` tracking service orientation, collaboration, continuous learning, excellence pursuit
-   - `growth_mindset` with indicators, development areas, and readiness assessment
-   - `service_impact` field added to experience entries
-   - Enhanced `strengths` format with evidence and workplace value
-4. Updated system prompt to Dr. Elena Rodriguez persona with 15 years IPP experience
-5. Integrated core Ignatian values: Cura Personalis, Magis, Service to Others, Discernment, Formation
+1. Added Ignatian-focused extraction fields:
+   - `character_strengths` with Ignatian dimensions
+   - `values_indicators` (service, collaboration, learning, excellence)
+   - `growth_mindset` assessment
+   - `service_impact` in experiences
 
-**Documentation Needed**: 
-- Frontend components need updating to handle the new Ignatian fields
-- API documentation should reflect the enhanced resume analysis response structure
+2. Implemented chain-of-thought reasoning in prompts
+3. Added few-shot learning examples
+4. Created Dr. Elena Rodriguez persona for system prompt
 
-**Testing**: 
-- Manual testing required with sample resumes to verify Ignatian values extraction
-- Frontend display of new fields needs testing once components are updated
+**Testing Notes**:
+- Resume analysis now returns enhanced Ignatian fields
+- Frontend properly displays both old and new analysis formats
+- Re-analyze button triggers fresh analysis with enhanced insights
 
-**Status**: Ready for documentation review and frontend integration
+### Path Selection Implementation
+
+**Changes Made**: Created path selection screen for Exploration vs Interview Prep modes
+
+**Files Modified**:
+- `/frontend/src/pages/PathSelection.tsx` - New component
+- `/frontend/src/components/navigation/NavigationBar.tsx` - Added mode indicator
+- `/frontend/src/pages/context/ContextStage.tsx` - Resume-only focus
+- `/frontend/src/App.tsx` - Routing updates
+
+**Implementation Details**:
+- Path stored in sessionStorage
+- Mode indicator persists across stages
+- Context Stage updated for resume-only upload
+
+## Best Practices Learned
+
+1. **LLM Prompt Engineering**:
+   - Chain-of-thought reasoning improves extraction quality
+   - Few-shot examples guide consistent output
+   - Structured JSON schemas prevent parsing errors
+
+2. **React State Management**:
+   - SessionStorage for cross-component state
+   - Careful handling of mixed data types from LLM
+   - TypeScript interfaces for complex nested objects
+
+3. **API Design**:
+   - Separate endpoints for different analysis types
+   - Progress tracking for long-running operations
+   - Proper error handling and user feedback
+
+## Technical Challenges & Solutions
+
+1. **Mixed Array Types from LLM**:
+   - Problem: LLM sometimes returns strings instead of objects
+   - Solution: Type guards and flexible rendering logic
+
+2. **Resume Re-analysis Flow**:
+   - Problem: Need to clear old results before new analysis
+   - Solution: State reset and proper loading states
+
+3. **Progress Tracking**:
+   - Problem: Long analysis times without feedback
+   - Solution: Polling mechanism with progress indicators

@@ -109,11 +109,21 @@ File: `/backend/app/services/llm_service.py:14-111`
 
 ## 🛠️ Technical Debt
 
+### Infrastructure Improvements
+- [ ] Migrate file uploads from local storage to AWS S3
+  - Currently storing PDFs in backend/uploads/ directory
+  - Need to implement S3 bucket configuration
+  - Update upload endpoints to use S3
+  - Add proper file lifecycle management
+  - Implement secure presigned URLs for downloads
+
 ### Consolidation Needed
-- [ ] Merge `llm_service.py` and `enhanced_llm_service.py`
-  - Both files have overlapping functionality
-  - Enhanced version has better Ignatian prompts
-  - Need to consolidate into single service
+- [x] Merge `llm_service.py` and `enhanced_llm_service.py` - COMPLETED 2025-06-22
+  - ✅ Consolidated both services into single `llm_service.py`
+  - ✅ Kept enhanced prompts and methods
+  - ✅ Maintained backward compatibility
+  - ✅ Added new enhanced methods (reflection synthesis, interview questions)
+  - ✅ Deleted `enhanced_llm_service.py`
 
 ### TypeScript Improvements
 - [ ] Add proper types for analysis results
@@ -191,6 +201,13 @@ GET /api/jobs/overlap-analysis/{job_ids}
 ## 🔄 Recently Completed (Last 7 Days)
 
 ### 2025-06-22
+- [x] Consolidate LLM services to clean up technical debt:
+  - Merged `llm_service.py` and `enhanced_llm_service.py` into single service
+  - Kept all enhanced features: better prompts, metadata, error handling
+  - Added new methods: generate_reflection_synthesis, generate_ignatian_reflection_prompts, 
+    generate_portfolio_project, generate_interview_questions
+  - Maintained backward compatibility for existing code
+  - Deleted redundant enhanced_llm_service.py file
 - [x] Implement single file upload for Interview Prep Mode in Experience Stage:
   - Added job upload UI when no job analysis exists
   - Integrated with existing `/api/analysis/start` endpoint
