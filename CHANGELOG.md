@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- 
+
+### Changed
+- 
+
+### Fixed
+- 
+
+### Removed
+- 
+
+## [0.3.0] - 2025-06-22
+
+### Added
 - Single file upload for Interview Prep Mode in Experience Stage
 - Job upload UI when no job analysis exists yet
 - Progress tracking during job analysis with polling mechanism
@@ -16,12 +30,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Updated DocumentAnalysisResponse schema to include resume_document_id and job_document_id
 - Experience Stage now conditionally shows job upload or experience selection based on analysis state
-
-### Fixed
-- 
-
-### Removed
-- 
 
 ## [0.2.0] - 2025-06-21
 
