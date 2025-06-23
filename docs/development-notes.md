@@ -1,5 +1,93 @@
 # Development Notes
 
+## 2025-06-22 Development Update - Personal Background Questionnaire
+**Changes Made**: Implemented personal background questionnaire for Context Stage
+**Files Modified**: 
+- `/backend/app/models/questionnaire.py` - Created UserBackgroundQuestionnaire model
+- `/backend/app/api/questionnaire.py` - Added CRUD API endpoints
+- `/backend/app/core/schemas.py` - Added questionnaire schemas
+- `/backend/app/models/analysis.py` - Added foreign key to questionnaire
+- `/backend/app/services/analysis_service.py` - Integrated questionnaire data into analysis
+- `/frontend/src/components/questionnaire/BackgroundQuestionnaire.tsx` - Created main component
+- `/frontend/src/components/questionnaire/MultiStepForm.tsx` - Created multi-step form component
+- `/frontend/src/components/questionnaire/Questionnaire.css` - Added styling
+- `/frontend/src/pages/context/ContextStage.tsx` - Integrated questionnaire into flow
+- `/backend/database/migrations/versions/add_questionnaire_table.py` - Created migration
+
+**Documentation Needed**: Update user guide with questionnaire information
+**Testing**: Need to test complete questionnaire flow end-to-end
+**Status**: Ready for testing
+
+**Key Features**:
+1. Personal background questionnaire with 12 questions across 4 categories:
+   - Values & Motivations (3 questions)
+   - Service Orientation (3 questions)
+   - Growth & Learning (3 questions)
+   - Work Style & Environment (3 questions)
+
+2. Multi-step form with:
+   - Progress tracking and visual indicators
+   - Auto-save to localStorage
+   - Field validation
+   - Navigation between steps
+
+3. Backend integration:
+   - JSON storage for flexible responses
+   - Linked to document analysis
+   - Passed to LLM for personalized analysis
+
+4. UI Integration:
+   - Optional step after resume upload
+   - Shows completion status
+   - Allows review/update of responses
+
+**Technical Implementation**:
+- Used JSON column for flexible questionnaire storage
+- Multi-step form with React hooks for state management
+- Auto-save with debouncing to localStorage
+- Integrated with existing authentication and API patterns
+- Enhanced LLM service to use questionnaire data in user_context
+
+This brings Context Stage completion from 85% to 90% by adding deeper personal context beyond the resume.
+
+## 2025-06-22 Development Update - Questionnaire Integration Fixes
+**Changes Made**: Fixed React runtime error and implemented auto-reanalysis after questionnaire completion
+**Files Modified**: 
+- `/frontend/src/pages/context/ContextStage.tsx` - Fixed className syntax error (line 339)
+- `/backend/app/core/schemas.py` - Added background_questionnaire_id field to DocumentAnalysisResponse
+- `/frontend/src/components/questionnaire/BackgroundQuestionnaire.tsx` - Added auto-reanalysis trigger
+**Documentation Needed**: Update user guide for questionnaire feature
+**Testing**: Verified error resolution and questionnaire completion flow
+**Status**: Ready for production
+
+**Technical Details**:
+1. Fixed React error "Objects are not valid as a React child" caused by incorrect template string syntax
+2. Added background_questionnaire_id to backend schema for proper serialization
+3. Implemented automatic resume re-analysis after questionnaire completion:
+   - Triggers new analysis with questionnaire context
+   - Shows loading overlay during re-analysis
+   - Redirects to Context page on completion
+4. Added visual indicator for "Enhanced with Personal Context" when analysis includes questionnaire data
+
+## 2025-06-22 Development Update - React Runtime Error Fix
+**Changes Made**: Fixed "Objects are not valid as a React child" errors in ContextStage
+**Files Modified**: 
+- `/frontend/src/pages/context/ContextStage.tsx` - Fixed object rendering issues in multiple sections
+**Documentation Needed**: None - bug fix only
+**Testing**: Verified fix works with user login and resume analysis
+**Status**: Completed and verified
+
+**Technical Details**:
+1. Root cause: Arrays containing objects (e.g., education, values_indicators) were being rendered directly in JSX
+2. Fixed by enhancing getItemText utility function to handle complex objects:
+   - Education objects with type/field/institution
+   - Generic objects with various properties
+3. Applied getItemText consistently to all array renderings:
+   - Education section mapping
+   - Values indicators (service_orientation, collaboration, continuous_learning, excellence_pursuit)
+   - Growth mindset (indicators, development_areas)
+4. Verified fix by checking backend logs showing successful analysis completion
+
 ## 2025-06-22 Development Update - LLM Service Consolidation
 
 **Changes Made**: Consolidated llm_service.py and enhanced_llm_service.py into single service

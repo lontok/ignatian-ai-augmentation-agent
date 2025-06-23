@@ -27,6 +27,7 @@ class User(Base):
     documents = relationship("Document", back_populates="user")
     analyses = relationship("DocumentAnalysis", back_populates="user")
     ipp_progress = relationship("IPPStageProgress", back_populates="user")
+    background_questionnaires = relationship("UserBackgroundQuestionnaire", back_populates="user")
     
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}', name='{self.name}')>"

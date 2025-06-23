@@ -8,13 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- 
+- Personal background questionnaire for Context Stage with 12 questions across 4 categories
+- Multi-step form component with progress tracking and auto-save
+- Backend questionnaire model and API endpoints for CRUD operations
+- Integration of questionnaire data into LLM analysis for personalized insights
+- Optional questionnaire step after resume upload in Context Stage
 
 ### Changed
-- 
+- Context Stage now includes personal background collection beyond resume
+- LLM service enhanced to accept user context from questionnaire responses
+- Context Stage completion increased from 85% to 90%
 
 ### Fixed
-- 
+- React runtime error "Objects are not valid as a React child" in ContextStage by properly handling object arrays in resume analysis display
 
 ### Removed
 - 

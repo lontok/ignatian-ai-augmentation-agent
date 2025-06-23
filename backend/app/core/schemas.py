@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from enum import Enum
 
 class GoogleTokenRequest(BaseModel):
@@ -89,6 +89,7 @@ class DocumentAnalysisResponse(BaseModel):
     status: AnalysisStatusEnum
     resume_document_id: Optional[int] = None
     job_document_id: Optional[int] = None
+    background_questionnaire_id: Optional[int] = None
     resume_analysis: Optional[dict] = None
     job_analysis: Optional[dict] = None
     connections_analysis: Optional[dict] = None
@@ -120,6 +121,26 @@ class StartAnalysisResponse(BaseModel):
     analysis_id: int
     message: str
     status: AnalysisStatusEnum
+
+# Questionnaire schemas
+class BackgroundQuestionnaireCreate(BaseModel):
+    responses: Dict[str, Any]  # Flexible JSON object for responses
+    is_complete: bool = False
+    
+class BackgroundQuestionnaireUpdate(BaseModel):
+    responses: Dict[str, Any]  # Flexible JSON object for responses
+    is_complete: bool = False
+
+class BackgroundQuestionnaireResponse(BaseModel):
+    id: int
+    user_id: int
+    responses: Dict[str, Any]  # Flexible JSON object for responses
+    created_at: datetime
+    updated_at: datetime
+    completed_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
 
 # Forward reference resolution
 TokenResponse.model_rebuild()

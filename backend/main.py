@@ -5,7 +5,7 @@ import logging
 
 from config.settings import settings
 from config.logging_config import setup_logging
-from app.api import auth_router, documents_router, analysis_router
+from app.api import auth_router, documents_router, analysis_router, questionnaire_router
 
 # Setup logging based on environment
 logger = setup_logging(settings.environment)
@@ -32,6 +32,7 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/api")
 app.include_router(documents_router, prefix="/api")
 app.include_router(analysis_router, prefix="/api")
+app.include_router(questionnaire_router, prefix="/api")
 
 @app.get("/")
 async def root():

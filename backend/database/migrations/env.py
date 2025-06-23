@@ -14,6 +14,7 @@ from app.models import Base
 from app.models.user import User
 from app.models.document import Document
 from app.models.analysis import DocumentAnalysis, IPPStageProgress
+from app.models.questionnaire import UserBackgroundQuestionnaire
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

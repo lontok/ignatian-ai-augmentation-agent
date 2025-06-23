@@ -8,6 +8,7 @@ import logging
 from app.models.user import User
 from app.models.document import Document
 from app.models.analysis import DocumentAnalysis, IPPStageProgress
+from app.models.questionnaire import UserBackgroundQuestionnaire
 from app.services.llm_service import llm_service
 
 logger = logging.getLogger(__name__)
@@ -229,11 +230,18 @@ class AnalysisService:
         if not resume_doc.content_text:
             raise ValueError("Resume text content not available")
         
+        # Check if user has completed questionnaire
+        questionnaire = db.query(UserBackgroundQuestionnaire).filter(
+            UserBackgroundQuestionnaire.user_id == user.id,
+            UserBackgroundQuestionnaire.completed_at.isnot(None)
+        ).order_by(UserBackgroundQuestionnaire.created_at.desc()).first()
+        
         # Create analysis record with only resume
         analysis = DocumentAnalysis(
             user_id=user.id,
             resume_document_id=resume_document_id,
             job_document_id=None,  # No job document for resume-only analysis
+            background_questionnaire_id=questionnaire.id if questionnaire else None,
             status="pending"
         )
         db.add(analysis)
@@ -243,12 +251,13 @@ class AnalysisService:
         # Start asynchronous analysis
         asyncio.create_task(self._perform_resume_only_analysis(
             analysis_id=analysis.id,
-            resume_text=resume_doc.content_text
+            resume_text=resume_doc.content_text,
+            questionnaire_data=questionnaire.responses if questionnaire else None
         ))
         
         return analysis
     
-    async def _perform_resume_only_analysis(self, analysis_id: int, resume_text: str):
+    async def _perform_resume_only_analysis(self, analysis_id: int, resume_text: str, questionnaire_data: dict = None):
         """Perform resume-only LLM analysis with Ignatian focus"""
         
         # Get a new database session for the background task
@@ -275,7 +284,23 @@ class AnalysisService:
             analysis.progress_message = "Extracting skills, values, character strengths, and growth indicators from your resume..."
             db.commit()
             
-            resume_analysis = await llm_service.analyze_resume(resume_text)
+            # Build user context with questionnaire data if available
+            user_context = {}
+            if questionnaire_data:
+                logger.info(f"Including questionnaire data in resume analysis for enhanced personalization")
+                user_context = {
+                    'has_questionnaire': True,
+                    'career_values': questionnaire_data.get('career_values', ''),
+                    'mission_alignment': questionnaire_data.get('mission_alignment', ''),
+                    'service_experience': questionnaire_data.get('service_experience', ''),
+                    'helping_others': questionnaire_data.get('helping_others', ''),
+                    'learning_style': questionnaire_data.get('learning_style', ''),
+                    'work_environment': questionnaire_data.get('work_environment', ''),
+                    'collaboration_style': questionnaire_data.get('collaboration_style', ''),
+                    'values_focus': 'deep personal context available'
+                }
+            
+            resume_analysis = await llm_service.analyze_resume(resume_text, user_context)
             
             # Log to verify new fields are present
             logger.info(f"Resume analysis keys: {resume_analysis.keys()}")

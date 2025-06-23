@@ -8,12 +8,18 @@
 ## 🚨 Active Development
 
 ### IN PROGRESS
+- [ ] Personal background questionnaire implementation - `/frontend/src/components/questionnaire/BackgroundQuestionnaire.tsx`
+  - [x] Backend model and API endpoints created
+  - [x] Frontend components (BackgroundQuestionnaire, MultiStepForm)
+  - [x] Integrated into ContextStage UI
+  - [x] LLM service updated to use questionnaire data
+  - [ ] Test complete flow end-to-end
 
 ### BLOCKED
 
 ## 📋 IPP Stage Implementation Status
 
-### Stage 1: Context (Resume Analysis) - 85% Complete
+### Stage 1: Context (Resume Analysis) - 90% Complete
 
 #### ✅ Completed
 - [x] Path selection screen - `/frontend/src/pages/PathSelection.tsx`
@@ -47,17 +53,19 @@ File: `/backend/app/services/llm_service.py:14-111`
 - **NEW**: growth_mindset (indicators, development areas, readiness)
 
 #### ❌ Missing Ignatian Requirements
-- [ ] Personal background questionnaire component
-- [ ] Values inventory assessment UI component
+- [x] Personal background questionnaire component - `/frontend/src/components/questionnaire/BackgroundQuestionnaire.tsx`
+- [ ] Values inventory assessment UI component (partial - included in questionnaire)
 - [ ] Skills self-assessment tool
-- [ ] Mission/purpose capture form
+- [ ] Mission/purpose capture form (partial - included in questionnaire)
 
 #### 📝 Technical Tasks
 - [x] Enhance prompt in `llm_service.py` for Ignatian extraction
 - [x] Update frontend to handle new Ignatian fields
-- [ ] Add pre-upload questionnaire component
-- [ ] Create values inventory UI component
-- [ ] Add validation for Ignatian fields
+- [x] Add personal background questionnaire component
+- [x] Create multi-step form with auto-save functionality
+- [x] Integrate questionnaire data into LLM analysis
+- [ ] Create dedicated values inventory UI component
+- [ ] Add validation for all questionnaire fields
 
 ### Stage 2: Experience (Job Upload) - 25% Complete
 

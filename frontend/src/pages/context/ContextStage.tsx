@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import DocumentUpload from '../../components/documents/DocumentUpload';
 import AnalysisProgress from '../../components/AnalysisProgress';
+import BackgroundQuestionnaire from '../../components/questionnaire/BackgroundQuestionnaire';
 import { SUPPORTED_FILE_FORMATS } from '../../constants/fileFormats';
+import '../../components/questionnaire/Questionnaire.css';
 
 interface Document {
   id: number;
@@ -18,6 +20,7 @@ interface Document {
 interface ResumeAnalysis {
   id?: number;
   status: 'pending' | 'processing' | 'completed' | 'failed';
+  background_questionnaire_id?: number;
   resume_analysis?: {
     skills?: any;
     experience?: any[];
@@ -64,6 +67,8 @@ const ContextStage: React.FC = () => {
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [questionnaireCompleted, setQuestionnaireCompleted] = useState(false);
   
   // Get the selected path from sessionStorage
   const selectedPath = sessionStorage.getItem('selectedPath') || 'exploration';
@@ -71,6 +76,7 @@ const ContextStage: React.FC = () => {
   useEffect(() => {
     loadDocuments();
     checkLatestResumeAnalysis();
+    checkQuestionnaireStatus();
   }, []);
 
   useEffect(() => {
@@ -110,6 +116,7 @@ const ContextStage: React.FC = () => {
 
   const checkLatestResumeAnalysis = async () => {
     if (!token) return;
+    console.log('Checking latest resume analysis...');
 
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000/api'}/analysis/latest/status`, {
@@ -120,6 +127,10 @@ const ContextStage: React.FC = () => {
 
       if (response.ok) {
         const analysisData = await response.json();
+        console.log('Resume analysis data:', analysisData);
+        if (analysisData.resume_analysis?.education) {
+          console.log('Education data:', analysisData.resume_analysis.education);
+        }
         setResumeAnalysis(analysisData);
         
         // Start polling if analysis is in progress
@@ -130,6 +141,27 @@ const ContextStage: React.FC = () => {
     } catch (error) {
       // No analysis exists yet, which is fine
       console.log('No existing resume analysis found');
+    }
+  };
+
+  const checkQuestionnaireStatus = async () => {
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000/api'}/questionnaire/background/latest`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.completed_at) {
+          setQuestionnaireCompleted(true);
+        }
+      }
+    } catch (error) {
+      console.log('No existing questionnaire found');
     }
   };
 
@@ -246,6 +278,18 @@ const ContextStage: React.FC = () => {
     return hasRequiredDocuments();
   };
 
+  const handleQuestionnaireComplete = (data: any) => {
+    setQuestionnaireCompleted(true);
+    setShowQuestionnaire(false);
+    // Optionally show a success message
+    setUploadSuccess('Personal background questionnaire completed successfully!');
+    setTimeout(() => setUploadSuccess(null), 3000);
+  };
+
+  const handleQuestionnaireBack = () => {
+    setShowQuestionnaire(false);
+  };
+
   // Utility function to safely extract text from analysis items
   const getItemText = (item: any): string => {
     if (typeof item === 'string') return item;
@@ -254,14 +298,41 @@ const ContextStage: React.FC = () => {
     if (item?.text) return item.text;
     if (item?.value) return item.value;
     if (item?.description) return item.description;
+    // Handle education object with type, field, institution
+    if (item?.type || item?.field || item?.institution) {
+      const parts = [];
+      if (item.type) parts.push(item.type);
+      if (item.field) parts.push(item.field);
+      if (item.institution) parts.push(item.institution);
+      return parts.join(' - ');
+    }
     // If it's still an object, try to extract any string property
     if (typeof item === 'object' && item !== null) {
+      console.error('getItemText received unexpected object:', item);
       const firstStringValue = Object.values(item).find(val => typeof val === 'string');
       if (firstStringValue) return firstStringValue as string;
     }
     return ''; // Return empty string instead of stringifying to avoid showing JSON
   };
 
+  // Utility function to safely render any item
+  const safeRender = (item: any): React.ReactNode => {
+    const text = getItemText(item);
+    return text || null;
+  };
+  
+  // Ensure array items are safe to render
+  const safeMapArray = (arr: any[], renderFn: (item: any, index: number) => React.ReactNode): React.ReactNode[] => {
+    if (!Array.isArray(arr)) return [];
+    return arr.map((item, index) => {
+      try {
+        return renderFn(item, index);
+      } catch (e) {
+        console.error('Error rendering array item:', item, e);
+        return null;
+      }
+    }).filter(Boolean) as React.ReactNode[];
+  };
 
   if (loading) {
     return (
@@ -269,6 +340,20 @@ const ContextStage: React.FC = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading your documents...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show questionnaire if user clicked on it
+  if (showQuestionnaire) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <BackgroundQuestionnaire 
+            onComplete={handleQuestionnaireComplete}
+            onBack={handleQuestionnaireBack}
+          />
         </div>
       </div>
     );
@@ -283,8 +368,7 @@ const ContextStage: React.FC = () => {
             Context Stage: Understanding Who You Are
           </h1>
           {/* Path Indicator */}
-          <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mb-4
-            {selectedPath === 'exploration' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}">
+          <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mb-4 ${selectedPath === 'exploration' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
             {selectedPath === 'exploration' ? (
               <>
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -566,6 +650,16 @@ const ContextStage: React.FC = () => {
                           </svg>
                           <h3 className="text-lg font-medium mb-4">Resume Analysis Complete</h3>
                           
+                          {/* Enhanced Analysis Indicator */}
+                          {resumeAnalysis.background_questionnaire_id && typeof resumeAnalysis.background_questionnaire_id === 'number' && (
+                            <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 mb-4">
+                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              Enhanced with Personal Context
+                            </div>
+                          )}
+                          
                           {/* Display analysis results */}
                           {resumeAnalysis.resume_analysis && (
                             <div className="text-left bg-white rounded-md p-6 space-y-4">
@@ -635,10 +729,10 @@ const ContextStage: React.FC = () => {
                                             {exp.organization && <p className="text-sm text-gray-600">{exp.organization} {exp.duration ? `• ${exp.duration}` : ''}</p>}
                                             {exp.key_achievements && exp.key_achievements.length > 0 && (
                                               <ul className="mt-2 space-y-1">
-                                                {exp.key_achievements.map((achievement: string, idx: number) => (
+                                                {exp.key_achievements.map((achievement: any, idx: number) => (
                                                   <li key={idx} className="text-sm text-gray-700 flex items-start">
                                                     <span className="mr-2">•</span>
-                                                    <span>{achievement}</span>
+                                                    <span>{getItemText(achievement)}</span>
                                                   </li>
                                                 ))}
                                               </ul>
@@ -679,8 +773,8 @@ const ContextStage: React.FC = () => {
                                       )}
                                       {resumeAnalysis.resume_analysis.education.achievements && resumeAnalysis.resume_analysis.education.achievements.length > 0 && (
                                         <ul className="mt-2 space-y-1">
-                                          {resumeAnalysis.resume_analysis.education.achievements.map((achievement: string, idx: number) => (
-                                            <li key={idx} className="text-sm text-gray-700">• {achievement}</li>
+                                          {resumeAnalysis.resume_analysis.education.achievements.map((achievement: any, idx: number) => (
+                                            <li key={idx} className="text-sm text-gray-700">• {getItemText(achievement)}</li>
                                           ))}
                                         </ul>
                                       )}
@@ -688,8 +782,8 @@ const ContextStage: React.FC = () => {
                                         <div className="mt-2">
                                           <p className="text-sm font-medium text-gray-700">Activities & Values:</p>
                                           <ul className="space-y-1">
-                                            {resumeAnalysis.resume_analysis.education.extracurricular.map((activity: string, idx: number) => (
-                                              <li key={idx} className="text-sm text-gray-600">• {activity}</li>
+                                            {resumeAnalysis.resume_analysis.education.extracurricular.map((activity: any, idx: number) => (
+                                              <li key={idx} className="text-sm text-gray-600">• {getItemText(activity)}</li>
                                             ))}
                                           </ul>
                                         </div>
@@ -698,6 +792,34 @@ const ContextStage: React.FC = () => {
                                   ) : Array.isArray(resumeAnalysis.resume_analysis.education) && resumeAnalysis.resume_analysis.education.length > 0 ? (
                                     <ul className="space-y-1">
                                       {resumeAnalysis.resume_analysis.education.map((edu: any, index: number) => {
+                                        // Debug logging
+                                        if (typeof edu === 'object' && edu !== null) {
+                                          console.log('Education item:', edu);
+                                        }
+                                        
+                                        // Handle education object with specific fields
+                                        if (typeof edu === 'object' && (edu.degree || edu.institution || edu.field)) {
+                                          const parts = [];
+                                          if (edu.degree) parts.push(edu.degree);
+                                          if (edu.field) parts.push(edu.field);
+                                          if (edu.institution) parts.push(edu.institution);
+                                          return parts.length > 0 ? (
+                                            <li key={index} className="text-sm text-gray-700">{parts.join(' - ')}</li>
+                                          ) : null;
+                                        }
+                                        
+                                        // Also handle objects with type/field/institution (the error pattern)
+                                        if (typeof edu === 'object' && (edu.type || edu.field || edu.institution)) {
+                                          const parts = [];
+                                          if (edu.type) parts.push(edu.type);
+                                          if (edu.field) parts.push(edu.field);
+                                          if (edu.institution) parts.push(edu.institution);
+                                          return parts.length > 0 ? (
+                                            <li key={index} className="text-sm text-gray-700">{parts.join(' - ')}</li>
+                                          ) : null;
+                                        }
+                                        
+                                        // Fallback to getItemText for other formats
                                         const eduText = getItemText(edu);
                                         return eduText ? (
                                           <li key={index} className="text-sm text-gray-700">{eduText}</li>
@@ -737,7 +859,7 @@ const ContextStage: React.FC = () => {
                                           {resumeAnalysis.resume_analysis.values_indicators.service_orientation.map((item, idx) => (
                                             <li key={idx} className="flex items-start">
                                               <span className="mr-1">•</span>
-                                              <span>{item}</span>
+                                              <span>{getItemText(item)}</span>
                                             </li>
                                           ))}
                                         </ul>
@@ -750,7 +872,7 @@ const ContextStage: React.FC = () => {
                                           {resumeAnalysis.resume_analysis.values_indicators.collaboration.map((item, idx) => (
                                             <li key={idx} className="flex items-start">
                                               <span className="mr-1">•</span>
-                                              <span>{item}</span>
+                                              <span>{getItemText(item)}</span>
                                             </li>
                                           ))}
                                         </ul>
@@ -763,7 +885,7 @@ const ContextStage: React.FC = () => {
                                           {resumeAnalysis.resume_analysis.values_indicators.continuous_learning.map((item, idx) => (
                                             <li key={idx} className="flex items-start">
                                               <span className="mr-1">•</span>
-                                              <span>{item}</span>
+                                              <span>{getItemText(item)}</span>
                                             </li>
                                           ))}
                                         </ul>
@@ -776,7 +898,7 @@ const ContextStage: React.FC = () => {
                                           {resumeAnalysis.resume_analysis.values_indicators.excellence_pursuit.map((item, idx) => (
                                             <li key={idx} className="flex items-start">
                                               <span className="mr-1">•</span>
-                                              <span>{item}</span>
+                                              <span>{getItemText(item)}</span>
                                             </li>
                                           ))}
                                         </ul>
@@ -797,7 +919,7 @@ const ContextStage: React.FC = () => {
                                           {resumeAnalysis.resume_analysis.growth_mindset.indicators.map((indicator, idx) => (
                                             <li key={idx} className="flex items-start">
                                               <span className="mr-1">•</span>
-                                              <span>{indicator}</span>
+                                              <span>{getItemText(indicator)}</span>
                                             </li>
                                           ))}
                                         </ul>
@@ -810,7 +932,7 @@ const ContextStage: React.FC = () => {
                                           {resumeAnalysis.resume_analysis.growth_mindset.development_areas.map((area, idx) => (
                                             <li key={idx} className="flex items-start">
                                               <span className="mr-1">•</span>
-                                              <span>{area}</span>
+                                              <span>{getItemText(area)}</span>
                                             </li>
                                           ))}
                                         </ul>
@@ -853,6 +975,56 @@ const ContextStage: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Personal Background Questionnaire Section */}
+        {hasRequiredDocuments() && (
+          <div className="mb-8">
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <div className="text-center">
+                <div className={`w-12 h-12 ${questionnaireCompleted ? 'bg-green-100' : 'bg-purple-100'} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                  {questionnaireCompleted ? (
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  )}
+                </div>
+                <h3 className="text-lg font-medium mb-2">Personal Background</h3>
+                {questionnaireCompleted ? (
+                  <>
+                    <p className="text-sm text-gray-600 mb-4">
+                      You've completed your personal background questionnaire. This deeper context 
+                      will help us provide more personalized recommendations.
+                    </p>
+                    <button
+                      onClick={() => setShowQuestionnaire(true)}
+                      className="text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      Review or update your responses
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-gray-600 mb-4">
+                      <strong>Optional but recommended:</strong> Share more about your values, motivations, 
+                      and work preferences to receive more personalized recommendations aligned with 
+                      Ignatian principles of <em>cura personalis</em> (care for the whole person).
+                    </p>
+                    <button
+                      onClick={() => setShowQuestionnaire(true)}
+                      className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors"
+                    >
+                      Complete Questionnaire
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         )}
 

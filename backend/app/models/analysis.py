@@ -15,6 +15,7 @@ class DocumentAnalysis(Base):
     # Document references
     resume_document_id = Column(Integer, ForeignKey(f"{settings.db_schema}.documents.id"), nullable=True)
     job_document_id = Column(Integer, ForeignKey(f"{settings.db_schema}.documents.id"), nullable=True)
+    background_questionnaire_id = Column(Integer, ForeignKey(f"{settings.db_schema}.user_background_questionnaires.id"), nullable=True)
     
     # Analysis results (stored as JSON)
     resume_analysis = Column(JSON, nullable=True)
@@ -42,6 +43,7 @@ class DocumentAnalysis(Base):
     user = relationship("User", back_populates="analyses")
     resume_document = relationship("Document", foreign_keys=[resume_document_id])
     job_document = relationship("Document", foreign_keys=[job_document_id])
+    background_questionnaire = relationship("UserBackgroundQuestionnaire", foreign_keys=[background_questionnaire_id])
 
 class IPPStageProgress(Base):
     __tablename__ = "ipp_stage_progress"
